@@ -23,11 +23,13 @@ public class Manager {
 	// try to load default cache conf
 	static Object gooTmp = null;	
 	static{ 
+		System.out.println("<INITCACHE>");
 		 try{
 			 gooTmp = System.getProperty("com.google.appengine.runtime.version");
 		 }catch(Throwable e){e.printStackTrace();}
 		 
 		 try{
+			 
 			 if (gooTmp==null){
 				 //net.sf.jsr107cache.CacheFactory=ws.rrd.cache.BasicCacheFactory
 				 try{
@@ -45,6 +47,7 @@ public class Manager {
 					 prTmp.load(in);
 					 String key = "net.sf.jsr107cache.CacheFactory";
 					 String val = prTmp.getProperty(key);
+					 
 					 System.out.println(key +" = "+val);
 					 System.out.println("cleaning "+key+" == {" +System.clearProperty( key )+"}");
 					 in.close();
@@ -57,6 +60,7 @@ public class Manager {
 		 }catch(Throwable e){
 			 e.printStackTrace();
 		 }
+		 System.out.println("</INITCACHE>");
 	}
       	
 	/**
