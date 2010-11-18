@@ -373,6 +373,11 @@ public class FileCache implements Cache {
 		}
 	}
 
+
+	public String getBaseDir() {
+		return this.basedir.toString();
+	}
+
 }
 
 

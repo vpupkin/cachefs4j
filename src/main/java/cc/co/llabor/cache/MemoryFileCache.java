@@ -27,7 +27,19 @@ public class MemoryFileCache {
 
 	public MemoryFileItem get (String name) throws IOException{
 			Cache cache = Manager.getCache(this.cachename);
-			MemoryFileItem retval = (MemoryFileItem) cache.get(name);
+			if (cache instanceof FileCache){
+				String baseDir = ((FileCache)cache).getBaseDir();
+				name = name.startsWith(baseDir)?name.substring(baseDir.length()):name;
+			}
+			MemoryFileItem retval = null;
+			Object o = cache.get(name);
+			if (o instanceof String){
+				retval = new MemoryFileItem (name,"text/plain",false,name, 0);
+				retval.getOutputStream().write( ((String)o).getBytes());
+				retval.flush();
+			}
+			if (o instanceof MemoryFileItem)
+				retval = (MemoryFileItem) o; 
 			 if (retval ==null){ // try to restore parts
 				  for (int i=0;cache.get(name+"::"+i)!=null;){
 					 MemoryFileItem next = (MemoryFileItem)cache.get(name+"::"+i);				 
@@ -71,7 +83,7 @@ public class MemoryFileCache {
 	
 	
 	/**
-	 * @deperecated use getInstance()
+	 * @deprecated use getInstance()
 	 * 
 	 * 
 	 * @author vipup

@@ -130,7 +130,11 @@ public class MemoryFileItem implements FileItem, Serializable {
                 this.isFormField = arg0;
         }
 
-
+        public void write(OutputStream out) throws Exception {
+        	byte[] buf = content.getBytes();
+			out.write(buf);
+        }
+        
         public void write(File arg0) throws Exception {
         	if(1==1)throw new RuntimeException("Unimplemented - can't use FileWriter in GAE.   File::"+arg0);
         }

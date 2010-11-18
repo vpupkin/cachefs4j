@@ -5,8 +5,22 @@
 	<groupId>cc.co.llabor</groupId>
 	<artifactId>cachefs</artifactId>
 	<name>CacheFS</name>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.3</version>
 	<description>FileSystem based implementation</description>
+	<build>
+		<plugins>
+			<!-- Java compiler version -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	<dependencies>
 		<dependency>
 			<groupId>net.sf.jsr107cache</groupId>
