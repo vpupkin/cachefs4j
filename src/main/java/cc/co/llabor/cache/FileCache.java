@@ -59,7 +59,7 @@ public class FileCache implements Cache {
 		//System.getProperty("user.home");
 		basedir = new File(baseDirName+File.separator+namespace);
 		if (!basedir.exists()){
-			basedir.mkdir();
+			basedir.mkdirs();
 			System.out.println("BASEDIR [" + basedir +"] creted.");
 		}
 	}
@@ -196,7 +196,7 @@ public class FileCache implements Cache {
 	public Set keySet() {
 		Set<File> retval = new HashSet<File> ();
 		String[] listTmp =  null; 
-		listTmp = this.basedir .list(); 
+		listTmp = this.basedir .list();// this.basedir.getParentFile().exists()
 		for (String fNameTmp :listTmp )
 		try{
 			File nextTmp = new File ( this.basedir, fNameTmp);

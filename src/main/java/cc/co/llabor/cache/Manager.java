@@ -3,6 +3,7 @@ package cc.co.llabor.cache;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
  
 
 import net.sf.jsr107cache.Cache;
@@ -20,47 +21,81 @@ import net.sf.jsr107cache.CacheManager;
  * Creation:  26.08.2010::20:14:35<br> 
  */
 public class Manager {
+	static final Logger log = Logger.getLogger(Manager.class.getName());
 	// try to load default cache conf
 	static Object gooTmp = null;	
 	static{ 
-		System.out.println("<INITCACHE>");
+		log.info( "<INITCACHE>");
 		 try{
 			 gooTmp = System.getProperty("com.google.appengine.runtime.version");
-		 }catch(Throwable e){e.printStackTrace();}
+		 }catch(Throwable e){
+			 log.warning(e.getMessage());
+			 e.printStackTrace();
+		 }
 		 
 		 try{
 			 
 			 if (gooTmp==null){
 				 //net.sf.jsr107cache.CacheFactory=ws.rrd.cache.BasicCacheFactory
+				 log.info("<NOGAE/>" );
+
 				 try{
 					 //java.io.InputStream in = MemoryFileCache.class.getClassLoader().getResourceAsStream("META-INF/services/net.sf.jsr107cache.CacheFactory");
 					 //java.io.InputStream in = MemoryFileCache.class.getClassLoader().getResourceAsStream("jcache.properties");
+					 log.info("<rename src='!net.sf.jsr107cache.CacheFactory' dst='net.sf.jsr107cache.CacheFactory'> "  );
 					 String fNameTmp = MemoryFileCache.class.getClassLoader().getResource("META-INF/services/!net.sf.jsr107cache.CacheFactory").toString();
 					 fNameTmp = fNameTmp.replace("%20", " ");
 					 fNameTmp = fNameTmp.replace("file:/", "");
 					 //if (myNewCacheSettings.exists())
-					 File myNewCacheSettings = new File (fNameTmp) ;
+					 File reserveConfigFile = new File (fNameTmp) ;
 					 File newFile4Cfg = new File(fNameTmp.replace("s/!ne", "s/ne"));
-					 myNewCacheSettings.renameTo(newFile4Cfg);
-					 java.io.InputStream in = new FileInputStream(newFile4Cfg);
+					 java.io.InputStream in = null;
+					 if (newFile4Cfg .exists() ){
+						 log.warning("<!!!EXIST!!!>");
+						 in = new FileInputStream(newFile4Cfg);
+					 }else if (reserveConfigFile.exists()){
+						 reserveConfigFile.renameTo(newFile4Cfg);
+						 in = new FileInputStream(newFile4Cfg);
+						 log.info("<compleete>");
+					 }else{
+						 in = MemoryFileCache.class.getClassLoader().getResourceAsStream("META-INF/services/net.sf.jsr107cache.CacheFactory");
+						 String cpLocation = MemoryFileCache.class.getClassLoader().getResource("META-INF/services/net.sf.jsr107cache.CacheFactory").toString();
+						 log.info("<init src='"+cpLocation+"'>");
+					 }
+					 log.info("</rename>");
+					 
 					 Properties prTmp = new Properties();
+					 log.info("<init>");
 					 prTmp.load(in);
+					 
+					 log.info(""+prTmp);
+					 
 					 String key = "net.sf.jsr107cache.CacheFactory";
 					 String val = prTmp.getProperty(key);
 					 
-					 System.out.println(key +" = "+val);
-					 System.out.println("cleaning "+key+" == {" +System.clearProperty( key )+"}");
+					 final String propertyBak = System.getProperty(key);
+					 log.info( " <clear.System.property name='"+key +"'><from>"+propertyBak+"</from><to>"+val+"</to>");
+					 try{
+						 System.clearProperty( key );
+					 }catch(Exception e){
+						 log.warning(e.getMessage());
+					 }
+						 
+					 log.info( " </clear.System.property>");
 					 in.close();
+					 log.info("</init>");
 				 }catch(Exception e){
+					 log.severe( e.getMessage() ); 
 					 e.printStackTrace();
 				 } 
 			 }else{
-				 System.out.println("GAE v"+gooTmp+ " CM="+CacheManager.getInstance());
+				 log.info("<GAE v"+gooTmp+ " CM="+CacheManager.getInstance() +"/>");
 			 }
 		 }catch(Throwable e){
+			 log.severe(  e.getMessage() ); 
 			 e.printStackTrace();
 		 }
-		 System.out.println("</INITCACHE>");
+		 log.info("</INITCACHE>");
 	}
       	
 	/**
@@ -101,7 +136,8 @@ public class Manager {
 				cacheTmp = cacheFactory.createCache(props);
 				cm.registerCache(cacheNS, cacheTmp);
 				retval = cacheTmp;
-			} catch (CacheException e) { 
+			} catch (CacheException e) {
+				log.severe(e.getMessage());
 				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
