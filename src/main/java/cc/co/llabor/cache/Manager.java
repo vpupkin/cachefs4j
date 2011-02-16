@@ -124,6 +124,7 @@ public class Manager {
 		CacheManager cm = CacheManager.getInstance();
 		Cache retval = cm.getCache (cacheNS);
 		boolean isGAE = null != gooTmp;
+		isGAE = false; // soo - doch nicht "always" 
 		if ( ( retval == null && ( isGAE || createIfNotExists ) )) // for GAE - always create
 		synchronized (CacheManager.class) { 
 			if (retval == null)
