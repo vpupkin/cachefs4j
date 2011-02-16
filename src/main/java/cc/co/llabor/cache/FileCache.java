@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream; 
 import java.io.UnsupportedEncodingException;
@@ -295,6 +296,25 @@ public class FileCache implements Cache {
 			if (arg1 instanceof Properties){
 				Properties prps = (Properties) arg1;
 				prps.store(fout, "CacheEntry stored at " +System.currentTimeMillis());
+				fout.close();
+
+			}else if (arg1 instanceof InputStream){
+				InputStream content = (InputStream)arg1 ;
+				int bufSize = content.available();
+				bufSize = bufSize == 0? 4096:bufSize; 
+				byte[] buf = new byte[bufSize];
+				for (int readed = content.read(buf);readed>0;readed = content.read(buf)){
+					fout.write(buf, 0, readed); 
+				}
+				fout.close();
+			}else if (arg1 instanceof BinaryContent){
+				InputStream content = ((BinaryContent)arg1).getContent() ;
+				int bufSize = content.available();
+				bufSize = bufSize == 0? 4096:bufSize; 
+				byte[] buf = new byte[bufSize];
+				for (int readed = content.read(buf);readed>0;readed = content.read(buf)){
+					fout.write(buf, 0, readed); 
+				}
 				fout.close();
 
 			}else{
