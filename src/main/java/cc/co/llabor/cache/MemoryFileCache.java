@@ -185,6 +185,7 @@ public class MemoryFileCache {
 
 	public String[] list(String folderUri) {
 		//list.add("222");list.add(".");list.remove(0);
+		List<String> retvalTmp = new ArrayList<String>();
 		for (String nameTmp:list.toArray(retval)){
 			Object o = null;
 			try {
@@ -196,9 +197,11 @@ public class MemoryFileCache {
 			}
 			if (null == o && !".".equals(nameTmp)){
 				list.remove(nameTmp);
+			}else{
+				retvalTmp.add(nameTmp.substring(1));
 			}
 		}
-		return list.toArray(retval);
+		return retvalTmp.toArray(retval);
 	}
 
 

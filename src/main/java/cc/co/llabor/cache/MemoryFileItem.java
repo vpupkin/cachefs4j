@@ -160,7 +160,8 @@ public class MemoryFileItem implements FileItem, Serializable {
         public synchronized boolean flush() throws IOException{
         		((ByteArrayOutputStream)content_out).flush();
         		((ByteArrayOutputStream)content_out).close(); 
-                content = new Blob(get());  
+        		byte[] data = ((ByteArrayOutputStream)content_out).toByteArray();
+                content = new Blob(data);  
                 content_out = null;
                 return true;
         }
@@ -199,7 +200,7 @@ public class MemoryFileItem implements FileItem, Serializable {
 					out.write(buff, 0,i);
 				}
 				flush();
-				this.contentInputStream = null;
+				this.contentInputStream = null;//content.getBytes().length
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
