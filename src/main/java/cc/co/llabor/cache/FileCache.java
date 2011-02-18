@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream; 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -307,16 +308,12 @@ public class FileCache implements Cache {
 					fout.write(buf, 0, readed); 
 				}
 				fout.close();
-			}else if (arg1 instanceof BinaryContent){
-				InputStream content = ((BinaryContent)arg1).getContent() ;
-				int bufSize = content.available();
-				bufSize = bufSize == 0? 4096:bufSize; 
-				byte[] buf = new byte[bufSize];
-				for (int readed = content.read(buf);readed>0;readed = content.read(buf)){
-					fout.write(buf, 0, readed); 
-				}
+////Serializable
+			}else if (arg1 instanceof Serializable){
+				ObjectOutputStream oout = new ObjectOutputStream(fout);
+				oout.writeObject( arg1); 
+				oout.flush();
 				fout.close();
-
 			}else{
 				ObjectOutputStream wr = new ObjectOutputStream(fout);
 				wr.writeObject(arg1);
