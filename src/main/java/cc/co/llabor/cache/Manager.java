@@ -2,6 +2,7 @@ package cc.co.llabor.cache;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
  
@@ -43,7 +44,9 @@ public class Manager {
 					 //java.io.InputStream in = MemoryFileCache.class.getClassLoader().getResourceAsStream("META-INF/services/net.sf.jsr107cache.CacheFactory");
 					 //java.io.InputStream in = MemoryFileCache.class.getClassLoader().getResourceAsStream("jcache.properties");
 					 log.info("<rename src='!net.sf.jsr107cache.CacheFactory' dst='net.sf.jsr107cache.CacheFactory'> "  );
-					 String fNameTmp = MemoryFileCache.class.getClassLoader().getResource("META-INF/services/!net.sf.jsr107cache.CacheFactory").toString();
+					 ClassLoader classLoader = MemoryFileCache.class.getClassLoader();
+					 URL resource = classLoader.getResource("META-INF/services/!net.sf.jsr107cache.CacheFactory");
+					 String fNameTmp = resource.toString();
 					 fNameTmp = fNameTmp.replace("%20", " ");
 					 fNameTmp = fNameTmp.replace("file:/", "");
 					 //if (myNewCacheSettings.exists())
@@ -58,8 +61,8 @@ public class Manager {
 						 in = new FileInputStream(newFile4Cfg);
 						 log.info("<compleete>");
 					 }else{
-						 in = MemoryFileCache.class.getClassLoader().getResourceAsStream("META-INF/services/net.sf.jsr107cache.CacheFactory");
-						 String cpLocation = MemoryFileCache.class.getClassLoader().getResource("META-INF/services/net.sf.jsr107cache.CacheFactory").toString();
+						 in = classLoader.getResourceAsStream("META-INF/services/net.sf.jsr107cache.CacheFactory");
+						 String cpLocation = classLoader.getResource("META-INF/services/net.sf.jsr107cache.CacheFactory").toString();
 						 log.info("<init src='"+cpLocation+"'>");
 					 }
 					 log.info("</rename>");
@@ -84,6 +87,10 @@ public class Manager {
 					 log.info( " </clear.System.property>");
 					 in.close();
 					 log.info("</init>");
+				//java.lang.NullPointerException	 
+				 }catch(java.lang.NullPointerException e){
+					 log.severe( e.getMessage() ); 
+					 e.printStackTrace();
 				 }catch(Exception e){
 					 log.severe( e.getMessage() ); 
 					 e.printStackTrace();
