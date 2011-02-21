@@ -4,6 +4,7 @@ import gnu.inet.encoding.Punycode;
 import gnu.inet.encoding.PunycodeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -116,15 +117,15 @@ public class FileCache implements Cache {
 		Object retval = null;
 		try {
 			File fTmp = createFile(  key);
-			FileInputStream fis;
-			
-
+			FileInputStream fis; 
 			fis = new FileInputStream(fTmp );
 			if ((""+key).endsWith(".properties")){
 				retval = new Properties();
 				((Properties)retval).load(fis);
 			}else if ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  ){
-				retval = fis;
+				// should be String!
+				
+				retval = readFully(fis);
 			}else{
 				ObjectInputStream ois = new ObjectInputStream(fis);
 				retval = ois.readObject();		
@@ -146,6 +147,20 @@ public class FileCache implements Cache {
 	}
 
 	
+	private String readFully(InputStream fis) throws IOException {
+		ByteArrayOutputStream out= new ByteArrayOutputStream();
+		byte[] buf = new byte[16*1024];
+		for (int i= fis.read(buf);i>=0;i=fis.read(buf)){
+			out.write(buf, 0, i);
+		}
+		out.flush();
+		out.close();
+		String retval = new String(out.toByteArray());
+		return retval;
+		
+	}
+
+
 	private String readFile(FileInputStream fis) throws IOException {
 		byte[] buf = new byte[fis.available()];
 		int lenTmp = fis.read(buf);
@@ -308,7 +323,14 @@ public class FileCache implements Cache {
 					fout.write(buf, 0, readed); 
 				}
 				fout.close();
-////Serializable
+			////MemoryFileItem
+			}else if (arg1 instanceof MemoryFileItem){
+				try{
+					((MemoryFileItem)arg1).write(fout);
+				}catch(Exception e){
+					throw new IOException(e);
+				}
+			////Serializable
 			}else if (arg1 instanceof Serializable){
 				ObjectOutputStream oout = new ObjectOutputStream(fout);
 				oout.writeObject( arg1); 
