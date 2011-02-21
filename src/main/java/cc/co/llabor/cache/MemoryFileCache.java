@@ -3,7 +3,10 @@ package cc.co.llabor.cache;
 import java.io.IOException;
 import java.io.OutputStream;   
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import net.sf.jsr107cache.Cache; 
 import net.sf.jsr107cache.CacheListener;
@@ -23,24 +26,24 @@ public class MemoryFileCache {
 	 
 	 private List<CacheListener> listeners = new ArrayList<CacheListener>();
 	 
-	 public void registerListener(CacheListener l){
-		 listeners.add(l);
-	 }
-	 public CacheListener unregisterListener(CacheListener l){
-		 CacheListener retval = null;
-		 if (listeners.remove(l))
-			 retval = l;
-		 return retval;
-	 }	 
-	
-	public MemoryFileCache(String cachename) {
+	 public MemoryFileCache(String cachename) {
 		this.cachename = cachename;
 	}
 
 	public static MemoryFileCache getInstance(String cachename){
 		return new MemoryFileCache( cachename );
 	}
-
+	public boolean isDir (String name) throws IOException{
+		Cache cache = Manager.getCache(this.cachename);
+		if (cache instanceof FileCache){
+			String baseDir = ((FileCache)cache).getBaseDir();
+			name = name.startsWith(baseDir)?name.substring(baseDir.length()):name;
+		}
+		 
+		Object o = cache.get(name+"/.!"+"");
+		return (o instanceof Properties );
+	}
+	
 	public MemoryFileItem get (String name) throws IOException{
 			Cache cache = Manager.getCache(this.cachename);
 			if (cache instanceof FileCache){
@@ -72,40 +75,87 @@ public class MemoryFileCache {
 			 return retval;
 		 }	
              
-	 public String put (MemoryFileItem  item) throws IOException{
-		 Cache cache = Manager.getCache(cachename);
-		 String name = item.getName();
-		 byte[] bs = item.get();
-		 
-		if (bs.length < MAX_SIZE){
-			 cache.put(name,item);
-		 }else{ //SPLIT
-			 int done = 0;
-			 for (int i=0;done<bs.length ;i++){
-				 String nameTmp = item.getName()+"::"+i;
-				 MemoryFileItem itemNext =  new MemoryFileItem (item.fileName,item.contentType,item.isFormField(),item.fileName, 0);
-				 OutputStream outputStream = itemNext.getOutputStream();
-				 outputStream.write(bs, done,Math.min( MAX_BUFF_SIZE, bs.length-done ));
-				 itemNext.flush();
-				 done += MAX_BUFF_SIZE;
-				 try{
-					 cache.put(nameTmp,itemNext);
-				 }catch(Throwable e){
-					 e.printStackTrace();
-					 throw new IOException (e.getMessage());
-				 }
-			 }
-		 }
-		 for (CacheListener l:listeners){ 
-			Object key = name;
-			l.onPut(key );
-		 }
-		 addToList(name);
-		 return name;
+	public String mkdir(MemoryFileItem item) throws IOException {
+			Cache cache = Manager.getCache(cachename);
+			String name = item.getName();
+			name +="/.!";
+			Object oldTmp = cache.get(name);
+			if (oldTmp != null) {
+				cache.remove(name);
+			}else{
+				oldTmp= new Properties(); 
+			}
+			if (!(oldTmp instanceof Properties)){
+				oldTmp= new Properties();  // forget any kind of content and replace by empty DIR
+			}
+			Properties dir = (Properties) oldTmp;
+			// creating date
+			dir.setProperty(".",""+System.currentTimeMillis());
+			cache.put(name, dir );
+			int beginIndex = 0;
+			int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+			// update parent
+			final String parentName = name.substring(beginIndex, endIndex)+"/.!";
+			Properties parent = (Properties)cache.get(parentName);
+			parent = parent==null?new Properties():parent;
+			parent.put(name, ""+System.currentTimeMillis());
+			cache.remove(parentName);
+			cache.put(parentName, parent );
+			
+			return name;
 	 }
+
+	public String put(MemoryFileItem item) throws IOException {
+		Cache cache = Manager.getCache(cachename);
+		String name = item.getName();
+		Object oldTmp = cache.get(name);
+		if (oldTmp != null) {
+			cache.remove(name);
+		}
+		byte[] bs = item.get();
+
+		if (bs.length < MAX_SIZE) {
+			cache.put(name, item);
+		} else { // SPLIT
+			int done = 0;
+			for (int i = 0; done < bs.length; i++) {
+				String nameTmp = item.getName() + "::" + i;
+				MemoryFileItem itemNext = new MemoryFileItem(item.fileName,
+						item.contentType, item.isFormField(), item.fileName, 0);
+				OutputStream outputStream = itemNext.getOutputStream();
+				outputStream.write(bs, done, Math.min(MAX_BUFF_SIZE, bs.length
+						- done));
+				itemNext.flush();
+				done += MAX_BUFF_SIZE;
+				try {
+					cache.put(nameTmp, itemNext);
+				} catch (Throwable e) {
+					e.printStackTrace();
+					throw new IOException(e.getMessage());
+				}
+			}
+		}
+		for (CacheListener l : listeners) {
+			Object key = name;
+			l.onPut(key);
+		}
+		addToList(name);
+		return name;
+	}
+
 	private synchronized void addToList(String name) {
-		if (list.indexOf(name)==-1)
-			 list.add(name);
+		if (list.indexOf(name) == -1)
+			list.add(name);
+		// update parent
+		int beginIndex = 0;
+		int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+		Cache cache = Manager.getCache(cachename);
+		final String parentName = name.substring(beginIndex, endIndex)+"/.!";
+		Properties parent = (Properties)cache.get(parentName);
+		parent = parent==null?new Properties():parent;
+		parent.put(name, ""+System.currentTimeMillis());
+		cache.remove(parentName);
+		cache.put(parentName, parent );
 	}
 	
 	
@@ -185,21 +235,51 @@ public class MemoryFileCache {
 
 	public String[] list(String folderUri) {
 		//list.add("222");list.add(".");list.remove(0);
-		List<String> retvalTmp = new ArrayList<String>();
+		list.clear();
+		Set<String> retvalTmp = new HashSet<String>();
+		try{
+			Cache cache = Manager.getCache(cachename); //Manager.getCache("SCRIPTSTORE/ABC")
+			final String dirTmp = (folderUri+"/.!").replace("//","/");
+			Properties dir = (Properties)cache.get(dirTmp);//reserved for Dir-content
+			for (String item: dir.keySet() .toArray(new String[]{})){
+				list.add(item);
+			}
+		}catch(Throwable e){
+			e.printStackTrace();
+		}
+		
 		for (String nameTmp:list.toArray(retval)){
 			Object o = null;
 			try {
+				if (nameTmp.endsWith("/.!")){
+					Cache cache = Manager.getCache(this.cachename);
+					if (cache instanceof FileCache){
+						String baseDir = ((FileCache)cache).getBaseDir();
+						nameTmp = nameTmp.startsWith(baseDir)?nameTmp.substring(baseDir.length()):nameTmp;
+					}
+					MemoryFileItem retval = null;
+					o = cache.get(nameTmp);					
+				}else{
 				 o = get(nameTmp);
+				}
+
+				if (null == o && !".".equals(nameTmp)){
+					list.remove(nameTmp);
+				}else if (o instanceof Properties){
+					final String dirName = nameTmp.substring(1,nameTmp.length()-3);
+					retvalTmp.add(dirName);//+".."
+				}else{
+					final String fileName = nameTmp.substring(1);
+					retvalTmp.add(fileName);
+				}
 				
 			} catch (IOException e) {
 				System.out.println("??----"+nameTmp);
 				e.printStackTrace();
-			}
-			if (null == o && !".".equals(nameTmp)){
-				list.remove(nameTmp);
-			}else{
-				retvalTmp.add(nameTmp.substring(1));
-			}
+			} catch (Throwable e) {
+				System.out.println("??----"+nameTmp);
+				e.printStackTrace();
+			}				
 		}
 		return retvalTmp.toArray(retval);
 	}

@@ -120,7 +120,7 @@ public class FileCache implements Cache {
 			
 
 			fis = new FileInputStream(fTmp );
-			if ((""+key).endsWith(".properties")){
+			if ((""+key).endsWith(".properties") || (""+key).endsWith(".!")){
 				retval = new Properties();
 				((Properties)retval).load(fis);
 			}else if ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  ){
@@ -281,17 +281,19 @@ public class FileCache implements Cache {
 	
 	
 	public Object put(Object key, Object arg1) {
-		
+		File fileTmp = null;
 		FileOutputStream fout;
 		try {
 			
-			File fileTmp = createFile(key);
+			fileTmp = createFile(key);
 			try{
 				String parent = fileTmp.getParent();
 				String parent2 = parent.replace(".", File.separator);
 				new File(parent).mkdirs();
+				log.warning( fileTmp.getAbsolutePath());
 			}catch(Exception e){
 				 e.printStackTrace();
+				 log.severe(e.getMessage());
 			}
 			fout = new FileOutputStream(fileTmp );
 			if (arg1 instanceof Properties){
