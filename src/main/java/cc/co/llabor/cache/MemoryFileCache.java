@@ -322,7 +322,9 @@ public class MemoryFileCache {
 		Properties parent = (Properties)cache.get(parentName);
 		parent = parent==null?new Properties():parent;
 		String pureName = name.substring(endIndex+1);
-		parent.remove( pureName );
+		parent.remove( pureName ); // "doc"
+		parent.remove( name ); // /ffgtk-0.7.91/doc
+		parent.remove( name +"/.!" ); // /ffgtk-0.7.91/doc
 		// replace
 		cache.remove(parentName);
 		cache.put(parentName, parent );

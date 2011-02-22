@@ -359,6 +359,7 @@ public class FileCache implements Cache {
 		if (fileTmp.exists() && retval != null){
 			File dest = createFile("~"+key);
 			fileTmp.renameTo(dest );
+			dest.delete();
 		}
 		return retval;
 	}
