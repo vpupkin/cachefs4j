@@ -327,6 +327,20 @@ public class MemoryFileCache {
 		cache.put(parentName, parent );
 	}
 
+	public void delDir(String uri) {
+		Cache cache = Manager.getCache(this.cachename);
+		String name = uri;
+		if (cache instanceof FileCache){
+			String baseDir = ((FileCache)cache).getBaseDir();
+			name  = name.startsWith(baseDir)?name.substring(baseDir.length()):name;
+		} 
+		System.out.println("<delete>\n\t<dir name=\'"+name+"\'/>... ");
+		Object o = cache.remove(name+"/.!"+"");
+		System.out.println(o+"\n</delete>");		
+		remFromList(name);
+		 
+	}
+
 
 }
 
