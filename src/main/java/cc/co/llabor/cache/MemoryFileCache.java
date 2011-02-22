@@ -59,6 +59,7 @@ public class MemoryFileCache {
 			}
 			if (o instanceof MemoryFileItem){
 				retval = (MemoryFileItem) o; 
+				retval = retval.getSize()==1?null:retval;
 			}
 			if (retval ==null){ // try to restore parts
 				  for (int i=0;cache.get(name+"::"+i)!=null;){
