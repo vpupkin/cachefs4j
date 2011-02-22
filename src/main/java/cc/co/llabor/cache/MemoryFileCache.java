@@ -245,6 +245,13 @@ public class MemoryFileCache {
 			Cache cache = Manager.getCache(cachename); //Manager.getCache("SCRIPTSTORE/ABC")
 			dir = (Properties)cache.get(dirTmp);//reserved for Dir-content
 			for (String item: dir.keySet() .toArray(new String[]{})){
+				if (item.endsWith("/.!")){
+					final String dirName = item;
+					//dirName = dirName.substring(1,item.length()-3);
+					list.add(dirName);
+					continue;//fix for old bugs
+				}
+				
 				list.add(item);
 			}
 		}catch(	NullPointerException e){
@@ -270,13 +277,14 @@ public class MemoryFileCache {
 					o = cache.get(nameTmp);					
 				}else{
 					 String fullPath = folderUri +"/"+	nameTmp;
-					 o = get(fullPath);
+					 o = get(fullPath.replace("//", "/"));
 				}
 
 				if (null == o && !".".equals(nameTmp)){
 					list.remove(nameTmp);
 				}else if (o instanceof Properties){
-					final String dirName = nameTmp.substring(1,nameTmp.length()-3);
+					final int beginIndex = "/".equals( folderUri )? 1:folderUri.length()+1;
+					final String dirName = nameTmp.substring(beginIndex,nameTmp.length()-3);
 					retvalTmp.add(dirName);//+".."
 				}else{
 					final String fileName = nameTmp;//.substring(1)
@@ -292,6 +300,31 @@ public class MemoryFileCache {
 			}				
 		}
 		return retvalTmp.toArray(retval);
+	}
+
+	public Object delete(MemoryFileItem toDel) {
+		Cache cache = Manager.getCache(cachename);
+		Object o = cache .remove(toDel);
+		remFromList(toDel.getName());
+		return o;
+		 
+	}
+
+	private void remFromList(String name) {
+		if (list.indexOf(name) == -1)
+			list.add(name);
+		// update parent
+		int beginIndex = 0;
+		int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+		Cache cache = Manager.getCache(cachename);
+		final String parentName = name.substring(beginIndex, endIndex)+"/.!";
+		Properties parent = (Properties)cache.get(parentName);
+		parent = parent==null?new Properties():parent;
+		String pureName = name.substring(endIndex+1);
+		parent.remove( pureName );
+		// replace
+		cache.remove(parentName);
+		cache.put(parentName, parent );
 	}
 
 
