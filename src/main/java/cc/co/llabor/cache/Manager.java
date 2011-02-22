@@ -84,6 +84,10 @@ public class Manager {
 					 log.info( " </clear.System.property>");
 					 in.close();
 					 log.info("</init>");
+				 }catch(NullPointerException e){
+					//-Dcccache
+					 log.severe( e.getMessage( )+"!  -Dcccache  ??? "  ); 
+					 throw e;
 				 }catch(Exception e){
 					 log.severe( e.getMessage() ); 
 					 e.printStackTrace();

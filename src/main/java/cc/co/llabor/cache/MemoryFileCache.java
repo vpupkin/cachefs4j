@@ -153,7 +153,9 @@ public class MemoryFileCache {
 		final String parentName = name.substring(beginIndex, endIndex)+"/.!";
 		Properties parent = (Properties)cache.get(parentName);
 		parent = parent==null?new Properties():parent;
-		parent.put(name, ""+System.currentTimeMillis());
+		String pureName = name.substring(endIndex+1);
+		parent.put(pureName, ""+System.currentTimeMillis());
+		// replace
 		cache.remove(parentName);
 		cache.put(parentName, parent );
 	}
@@ -237,13 +239,20 @@ public class MemoryFileCache {
 		//list.add("222");list.add(".");list.remove(0);
 		list.clear();
 		Set<String> retvalTmp = new HashSet<String>();
+		Properties dir = null;
+		final String dirTmp = (folderUri+"/.!").replace("//","/");
 		try{
 			Cache cache = Manager.getCache(cachename); //Manager.getCache("SCRIPTSTORE/ABC")
-			final String dirTmp = (folderUri+"/.!").replace("//","/");
-			Properties dir = (Properties)cache.get(dirTmp);//reserved for Dir-content
+			dir = (Properties)cache.get(dirTmp);//reserved for Dir-content
 			for (String item: dir.keySet() .toArray(new String[]{})){
 				list.add(item);
 			}
+		}catch(	NullPointerException e){
+			dir = new Properties();
+			Cache cache = Manager.getCache(cachename); 
+			// creating date
+			dir.setProperty(".",""+System.currentTimeMillis());
+			cache.put(dirTmp, dir );
 		}catch(Throwable e){
 			e.printStackTrace();
 		}
@@ -260,7 +269,8 @@ public class MemoryFileCache {
 					MemoryFileItem retval = null;
 					o = cache.get(nameTmp);					
 				}else{
-				 o = get(nameTmp);
+					 String fullPath = folderUri +"/"+	nameTmp;
+					 o = get(fullPath);
 				}
 
 				if (null == o && !".".equals(nameTmp)){
@@ -269,7 +279,7 @@ public class MemoryFileCache {
 					final String dirName = nameTmp.substring(1,nameTmp.length()-3);
 					retvalTmp.add(dirName);//+".."
 				}else{
-					final String fileName = nameTmp.substring(1);
+					final String fileName = nameTmp;//.substring(1)
 					retvalTmp.add(fileName);
 				}
 				
