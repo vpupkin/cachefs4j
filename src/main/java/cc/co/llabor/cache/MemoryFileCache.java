@@ -94,7 +94,8 @@ public class MemoryFileCache {
 			dir.setProperty(".",""+System.currentTimeMillis());
 			cache.put(name, dir );
 			int beginIndex = 0;
-			int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+			name = name.replace("//", "/");
+			int endIndex = name. substring(0,name.length()-3).lastIndexOf("/");
 			// update parent
 			final String parentName = name.substring(beginIndex, endIndex)+"/.!";
 			Properties parent = (Properties)cache.get(parentName);
