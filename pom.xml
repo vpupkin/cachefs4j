@@ -28,11 +28,7 @@
 			<email>vasIlIIj.pupkin_AT_gmAIl.com</email>
 		</developer>
 	</developers>
-  <scm>
-    <connection>scm:hg:http://cachefs4j.googlecode.com/hg/</connection>
-    <developerConnection>scm:hg:https://cachefs4j.googlecode.com/hg/</developerConnection>
-    <url>https://cachefs4j.googlecode.com/hg/</url>
-  </scm>
+ 
 	
 	<build>
 		<plugins>
