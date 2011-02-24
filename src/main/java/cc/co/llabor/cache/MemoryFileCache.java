@@ -80,6 +80,7 @@ public class MemoryFileCache {
 			Cache cache = Manager.getCache(cachename);
 			String name = item.getName();
 			name +="/.!";
+			name = name.replace("//", "/");
 			Object oldTmp = cache.get(name);
 			if (oldTmp != null) {
 				cache.remove(name);
@@ -94,10 +95,11 @@ public class MemoryFileCache {
 			dir.setProperty(".",""+System.currentTimeMillis());
 			cache.put(name, dir );
 			int beginIndex = 0;
-			name = name.replace("//", "/");
+			
 			int endIndex = name. substring(0,name.length()-3).lastIndexOf("/");
 			// update parent
-			final String parentName = name.substring(beginIndex, endIndex)+"/.!";
+			String parentName = name.substring(beginIndex, endIndex)+"/.!";
+			parentName =parentName.replace("//", "/");
 			Properties parent = (Properties)cache.get(parentName);
 			parent = parent==null?new Properties():parent;
 			parent.put(name, ""+System.currentTimeMillis());
@@ -110,6 +112,7 @@ public class MemoryFileCache {
 	public String put(MemoryFileItem item) throws IOException {
 		Cache cache = Manager.getCache(cachename);
 		String name = item.getName();
+		name = name.replace("//", "/");
 		Object oldTmp = cache.get(name);
 		if (oldTmp != null) {
 			cache.remove(name);
