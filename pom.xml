@@ -30,8 +30,8 @@
 	</developers>
  
   <scm>
-    <connection>scm:hg:${scm.base}</connection>
-    <developerConnection>scm:hg:${scm.base}</developerConnection>
+    <connection>scm:hg:${scm.base}/${pom.artifactId}</connection>
+    <developerConnection>scm:hg:${scm.base}/${pom.artifactId}</developerConnection>
     <url>${l.base}/JSPWiki/Wiki.jsp?page=${pom.artifactId}</url>
   </scm>
 	
