@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cc.co.llabor</groupId>
 	<artifactId>cachefs</artifactId>
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>5</version>
-  </parent>
-	
+	<parent>
+		<groupId>cc.co.llabor</groupId>
+		<artifactId>l-parent</artifactId>
+		<version>1.6</version>
+	</parent>	
+
 	<name>CacheFS</name>
 	<version>0.0.4-SNAPSHOT</version>
 	<description>FileSystem based JSR-170 implementation</description>
