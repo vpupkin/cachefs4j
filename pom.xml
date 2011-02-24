@@ -29,6 +29,11 @@
 		</developer>
 	</developers>
  
+  <scm>
+    <connection>scm:hg:${scm.base}</connection>
+    <developerConnection>scm:hg:${scm.base}</developerConnection>
+    <url>${l.base}/JSPWiki/Wiki.jsp?page=${pom.artifactId}</url>
+  </scm>
 	
 	<build>
 		<plugins>
