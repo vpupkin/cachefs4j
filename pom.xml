@@ -9,7 +9,7 @@
 	</parent>	
 
 	<name>CacheFS</name>
-	<version>0.0.8-SNAPSHOT</version>
+	<version>0.0.8</version>
 	<description>FileSystem based JSR-170 implementation</description>
 	<url>https://code.google.com/p/cachefs4j/</url>
 	<licenses>
