@@ -2,24 +2,20 @@ package cc.co.llabor.cache;
 
 import gnu.inet.encoding.Punycode;
 import gnu.inet.encoding.PunycodeException;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+ 
+import java.io.File; 
+import java.io.FileNotFoundException; 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream; 
-import java.io.Serializable;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder; 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Iterator; 
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -116,11 +112,12 @@ public class FileCache implements Cache {
 		Object retval = null;
 		try {
 			File fTmp = createFile(  key);
-			FileInputStream fis;
+			InputStream fis;
 			
-
-			fis = new FileInputStream(fTmp );
-			if ((""+key).endsWith(".properties") || (""+key).endsWith(".!")){
+			Class fosClazz = Class.forName("java.io.FileInputStream"); 
+			  
+			fis =(InputStream)fosClazz.getConstructor(String.class).newInstance(fTmp );;
+			if ((""+key).endsWith(".properties")){
 				retval = new Properties();
 				((Properties)retval).load(fis);
 			}else if ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  ){
@@ -146,7 +143,7 @@ public class FileCache implements Cache {
 	}
 
 	
-	private String readFile(FileInputStream fis) throws IOException {
+	private String readFile(InputStream fis) throws IOException {
 		byte[] buf = new byte[fis.available()];
 		int lenTmp = fis.read(buf);
 		String retval = new String(buf);
@@ -281,21 +278,21 @@ public class FileCache implements Cache {
 	
 	
 	public Object put(Object key, Object arg1) {
-		File fileTmp = null;
-		FileOutputStream fout;
+		
+		OutputStream fout = null;
 		try {
 			
-			fileTmp = createFile(key);
+			File fileTmp = createFile(key);
 			try{
 				String parent = fileTmp.getParent();
 				String parent2 = parent.replace(".", File.separator);
 				new File(parent).mkdirs();
-				log.warning( fileTmp.getAbsolutePath());
 			}catch(Exception e){
 				 e.printStackTrace();
-				 log.severe(e.getMessage());
 			}
-			fout = new FileOutputStream(fileTmp );
+			Class fosClazz = Class.forName("java.io.FileOutputStream");
+			
+			fout = (OutputStream)fosClazz.getConstructor(String.class).newInstance(fileTmp );
 			if (arg1 instanceof Properties){
 				Properties prps = (Properties) arg1;
 				prps.store(fout, "CacheEntry stored at " +System.currentTimeMillis());
@@ -310,12 +307,7 @@ public class FileCache implements Cache {
 					fout.write(buf, 0, readed); 
 				}
 				fout.close();
-////Serializable
-			}else if (arg1 instanceof Serializable){
-				ObjectOutputStream oout = new ObjectOutputStream(fout);
-				oout.writeObject( arg1); 
-				oout.flush();
-				fout.close();
+
 			}else{
 				ObjectOutputStream wr = new ObjectOutputStream(fout);
 				wr.writeObject(arg1);
@@ -330,7 +322,34 @@ public class FileCache implements Cache {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return e;
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
 		}
+		return fout;
 		
 	}
 
@@ -359,7 +378,6 @@ public class FileCache implements Cache {
 		if (fileTmp.exists() && retval != null){
 			File dest = createFile("~"+key);
 			fileTmp.renameTo(dest );
-			dest.delete();
 		}
 		return retval;
 	}
