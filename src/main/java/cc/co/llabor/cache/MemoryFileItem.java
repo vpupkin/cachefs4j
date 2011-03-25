@@ -167,9 +167,6 @@ public class MemoryFileItem implements FileItem, Serializable {
         }
 
 
-        public Date getDate() {
-                return date_created;
-        }
 
 		public void setContentType(String contentType) {
 			this.contentType = contentType;

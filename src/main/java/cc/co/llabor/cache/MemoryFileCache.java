@@ -3,6 +3,7 @@ package cc.co.llabor.cache;
 import java.io.IOException;
 import java.io.OutputStream;   
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -29,10 +30,24 @@ public class MemoryFileCache {
 	 public MemoryFileCache(String cachename) {
 		this.cachename = cachename;
 	}
+	 
+
+	 
 
 	public static MemoryFileCache getInstance(String cachename){
 		return new MemoryFileCache( cachename );
 	}
+	
+	 public Date getLastModified(String name) throws IOException{
+		 MemoryFileItem f = get(name);
+		 return f.date_created;
+	 }
+	 
+	 public Date getCreationDate(String name) throws IOException{
+		 MemoryFileItem f = get(name);
+		 return f.date_created;
+	 }
+	 
 	public boolean isDir (String name) throws IOException{
 		Cache cache = Manager.getCache(this.cachename);
 		if (cache instanceof FileCache){
