@@ -35,6 +35,27 @@
 	
 	<build>
 		<plugins>
+		
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.1</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<gpg.useagent>true</gpg.useagent>
+							<passphrase>${pgp.passphrase}</passphrase>
+						</configuration>
+					</plugin>		
+		
+		
 			<!-- Java compiler version -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
