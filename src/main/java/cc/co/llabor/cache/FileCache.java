@@ -298,7 +298,10 @@ public class FileCache implements Cache {
 			fout = new FileOutputStream(fileTmp );
 			if (arg1 instanceof Properties){
 				Properties prps = (Properties) arg1;
-				prps.store(fout, "CacheEntry stored at " +System.currentTimeMillis());
+				
+				final long currentTimeMillis = System.currentTimeMillis();
+//				prps.put(MemoryFileCache.CREATION_DATE, currentTimeMillis);
+				prps.store(fout, "CacheEntry stored at " +currentTimeMillis);
 				fout.close();
 
 			}else if (arg1 instanceof InputStream){
