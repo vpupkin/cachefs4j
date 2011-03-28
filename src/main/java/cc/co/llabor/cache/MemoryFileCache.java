@@ -23,7 +23,9 @@ import net.sf.jsr107cache.CacheListener;
  */
 public class MemoryFileCache {
 	
-	 private String cachename;
+	 public static final String CREATION_DATE = ".";
+
+	private String cachename;
 	 
 	 private List<CacheListener> listeners = new ArrayList<CacheListener>();
 	 
@@ -44,6 +46,18 @@ public class MemoryFileCache {
 	 }
 	 
 	 public Date getCreationDate(String name) throws IOException{
+		 if (isDir(name)){
+				Cache cache = Manager.getCache(this.cachename);
+				if (cache instanceof FileCache){
+					String baseDir = ((FileCache)cache).getBaseDir();
+					name = name.startsWith(baseDir)?name.substring(baseDir.length()):name;
+				}			 
+				Properties o = (Properties)cache.get(name+"/.!"+"");
+				final String dateAsTimestamp = o.getProperty(CREATION_DATE);
+				final long parseDateAsLong = Long.parseLong(dateAsTimestamp);
+				Date retval = new Date(parseDateAsLong);
+				return retval;
+		 }
 		 MemoryFileItem f = get(name);
 		 return f.date_created;
 	 }
@@ -335,7 +349,10 @@ public class MemoryFileCache {
 			list.add(name);
 		// update parent
 		int beginIndex = 0;
-		int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+		int endIndex = name.length()-1;
+		try{
+			name.substring(0,name.length()-3).lastIndexOf("/");
+		}catch(Exception e){e.printStackTrace();}
 		Cache cache = Manager.getCache(cachename);
 		final String parentName = name.substring(beginIndex, endIndex)+"/.!";
 		Properties parent = (Properties)cache.get(parentName);
