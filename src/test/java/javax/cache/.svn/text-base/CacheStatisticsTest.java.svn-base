@@ -1,0 +1,41 @@
+package javax.cache;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Papa<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  31.10.2008::11:58:34<br> 
+ */
+public class CacheStatisticsTest extends TestCase {
+
+	public void testClearStatistics() {
+		Cache cacheTmp = CacheManager.getInstance().getCache(this.getName());
+		Object key = "key";
+		Object value = "value"; 
+		assertEquals( 0, cacheTmp .size() );
+		cacheTmp .put(key, value);
+		assertEquals( 1, cacheTmp .size() );
+		assertEquals(cacheTmp.get(key), value);
+		assertTrue(cacheTmp.containsKey(key));
+		assertTrue(cacheTmp.containsValue(value));
+		assertEquals( 1, cacheTmp.getCacheStatistics().getCacheHits());
+		assertEquals(cacheTmp.get(key), value);
+		assertEquals( 2, cacheTmp.getCacheStatistics().getCacheHits());
+		assertEquals( 0, cacheTmp.getCacheStatistics().getCacheMisses());
+		assertEquals(cacheTmp.peek(key+"something unique"+System.currentTimeMillis()), null);
+		assertEquals( 1, cacheTmp.getCacheStatistics().getCacheMisses());
+		cacheTmp.getCacheStatistics().clearStatistics();
+		assertEquals( 0, cacheTmp.getCacheStatistics().getCacheMisses());
+		assertEquals( 0, cacheTmp.getCacheStatistics().getCacheHits());
+		
+	}
+
+}
+
+
+ 

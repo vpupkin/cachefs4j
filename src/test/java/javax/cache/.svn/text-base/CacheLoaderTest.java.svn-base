@@ -1,0 +1,54 @@
+package javax.cache;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  06.11.2008::16:25:35<br> 
+ */
+public class CacheLoaderTest extends TestCase {
+
+	public void testLoad() throws CacheException {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		cacheTmp.put("key2", "value2");
+		assertEquals (2, cacheTmp.size() );
+		cacheTmp.load("key");
+		assertEquals (2, cacheTmp.size());
+		cacheTmp.clear();
+	}
+
+	public void testLoadAll() throws CacheException {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		cacheTmp.put("key2", "value2");
+		assertEquals (2, cacheTmp.size() );
+		
+		Collection<Object> existingKeys = new ArrayList<Object>();
+		existingKeys.add("key");
+		existingKeys.add("key2");
+		cacheTmp.loadAll(existingKeys);
+		Collection<Object> notExistingKeys = new ArrayList<Object>();
+		notExistingKeys.add("key21");
+		notExistingKeys.add("key23");
+		cacheTmp.loadAll(notExistingKeys);
+		Collection<Object> partiallyExistingKeys = new ArrayList<Object>();
+		partiallyExistingKeys.add("key2");
+		partiallyExistingKeys.add("key23");
+		cacheTmp.loadAll(partiallyExistingKeys);
+	}
+
+}
+
+
+ 

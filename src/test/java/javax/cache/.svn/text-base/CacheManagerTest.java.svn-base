@@ -1,0 +1,43 @@
+package javax.cache;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  28.10.2008::15:46:50<br> 
+ */
+public class CacheManagerTest extends TestCase {
+	public void testCacheManager(){
+		assertNotNull("default cache must be provided for anybody. for ex. with capacity == 0", CacheManager.getInstance().getCache(this.getName()));
+	}
+	
+	public void testCache(){
+		testCacheManager();
+		Cache cacheTmp = CacheManager.getInstance().getCache(this.getName());
+		Object key = "key";
+		Object value = "value"; 
+		assertEquals( 0, cacheTmp .size() );
+		cacheTmp .put(key, value);
+		assertEquals( 1, cacheTmp .size() );
+		assertEquals(value, cacheTmp.get(key));
+		assertTrue(cacheTmp.containsKey(key));
+		assertTrue(cacheTmp.containsValue(value));
+	}	
+	
+	public void testCacheNames(){
+		Cache cache1Tmp = CacheManager.getInstance().getCache("1");
+		Cache cache2Tmp = CacheManager.getInstance().getCache("2");
+		assertTrue(CacheManager.getInstance().getCacheNames().contains("1"));
+		assertTrue(CacheManager.getInstance().getCacheNames().contains("2"));
+		CacheManager.getInstance().getCacheNames().remove("1");
+		assertFalse(CacheManager.getInstance().getCacheNames().contains("1"));
+	}
+}
+
+
+ 
