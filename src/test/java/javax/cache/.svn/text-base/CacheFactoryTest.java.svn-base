@@ -1,0 +1,28 @@
+package javax.cache;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  28.10.2008::15:42:45<br> 
+ */
+public class CacheFactoryTest extends TestCase {
+
+	public void testCreateCache() throws CacheException {
+		CacheFactory cfTmp = new javax.cache.impl.CacheFactoryImpl(); 
+		Cache o = cfTmp.createCache(new HashMap());
+		assertNotNull(o);
+	}
+
+}
+
+
+ 

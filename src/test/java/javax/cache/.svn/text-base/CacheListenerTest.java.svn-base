@@ -1,0 +1,81 @@
+package javax.cache;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  06.11.2008::16:25:58<br> 
+ */
+public class CacheListenerTest extends TestCase {
+
+	static Log log = LogFactory.getLog(CacheListenerTest.class);
+	Cache cache;
+	private CacheListener listener;
+	
+	@Override
+	protected void setUp() throws Exception {
+		cache = CacheManager.getInstance().getCache(this.getName());
+		listener = new ToStringCacheListener();
+		cache.addListener(listener);
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		cache=null;
+	}
+
+	public void testOnLoad() {
+		cache.put("a", "A");
+		//assumes not existing element will be tried to loaded
+		Object oTmp = cache.get("b");
+		log.debug(oTmp);
+		String checkVal = ((ToStringCacheListener)listener).buf.toString();
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_LOAD)>=0) ;
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_PUT)>=0) ;
+	}
+
+	public void testOnPut() {
+		cache.put("a", "A");
+		Object oTmp = cache.get("a");
+		log.debug(oTmp);
+		String checkVal = ((ToStringCacheListener)listener).buf.toString();
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_PUT)>=0) ;
+	}
+
+	public void testOnEvict() {
+		cache.clear();
+		int cacheCapacity=120;
+		// max-capacity must be reached
+		for (int i=0; i<cacheCapacity+2; i++)
+			cache.put("a"+i, "A"+i);
+		String checkVal = ((ToStringCacheListener)listener).buf.toString();
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_EVICT)>=0) ;
+	}
+
+	public void testOnRemove() {
+		cache.put("a", "A");
+		Object oTmp = cache.get("a");
+		cache.remove( "a" );
+		log.debug(oTmp);
+		String checkVal = ((ToStringCacheListener)listener).buf.toString();
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_REMOVE)>=0) ;
+	}
+
+	public void testOnClear() {
+		cache.put("a", "A");
+		Object oTmp = cache.get("a");
+		cache.clear();
+		log.debug(oTmp);
+		String checkVal = ((ToStringCacheListener)listener).buf.toString();
+		assertTrue(checkVal, checkVal.indexOf(ToStringCacheListener.ON_CLEAR)>=0); 
+	}
+}
+ 

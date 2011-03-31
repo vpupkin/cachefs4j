@@ -190,7 +190,10 @@ public class MemoryFileCache {
 		String pureName = name.substring(endIndex+1);
 		parent.put(pureName, ""+System.currentTimeMillis());
 		// replace
-		cache.remove(parentName);
+		Properties toDel = (Properties)cache.remove(parentName);
+		System.out.println(toDel);
+		// update Date for Dir
+		parent.put(CREATION_DATE, ""+System.currentTimeMillis());
 		cache.put(parentName, parent );
 	}
 	
@@ -301,6 +304,7 @@ public class MemoryFileCache {
 		for (String nameTmp:list.toArray(retval)){
 			Object o = null;
 			try {
+				if (null == nameTmp) continue;
 				if (nameTmp.endsWith("/.!")){
 					Cache cache = Manager.getCache(this.cachename);
 					if (cache instanceof FileCache){
@@ -311,7 +315,8 @@ public class MemoryFileCache {
 					o = cache.get(nameTmp);					
 				}else{
 					 String fullPath = folderUri +"/"+	nameTmp;
-					 o = get(fullPath.replace("//", "/"));
+					 fullPath = fullPath.replace("//", "/");
+					 o = get(fullPath );
 				}
 
 				if (null == o && !".".equals(nameTmp)){

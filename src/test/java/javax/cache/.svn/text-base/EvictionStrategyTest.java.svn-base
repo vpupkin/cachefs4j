@@ -1,0 +1,118 @@
+package javax.cache;
+
+import javax.cache.impl.EvictionStrategyLRU;
+import javax.cache.impl.EvictionStrategyFIFO;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  06.11.2008::16:25:08<br> 
+ */
+public class EvictionStrategyTest extends TestCase {
+
+	static Log log = LogFactory.getLog(EvictionStrategyTest.class);
+
+	public void testCreateEntry() {
+		log.fatal("Not yet implemented");
+	}
+
+	public void testDiscardEntry() {
+		log.fatal("Not yet implemented");
+	}
+
+	public void testTouchEntry() {
+		log.fatal("Not yet implemented");
+	}
+
+	public void testClear() {
+		log.fatal("Not yet implemented");
+	}
+
+	public void testEvict() {
+		log.fatal("Not yet implemented");
+	}
+	
+	public void testLRUEviction() {
+		Cache c = CacheManager.getInstance().getCache();
+		c.setEvictionStrategy(new EvictionStrategyLRU(5,10));
+		for (int i=1; i<=5; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(5,c.size());
+
+		for (int i=6; i<=8; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(8,c.size());
+
+		for (int i=9; i<=10; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(10,c.size());
+		
+		// retrieve the entry which was added first, 
+		// this "touches" it, so that it won't be evicted 
+		// first 
+		c.get("key1");
+		
+		// add more entries, now beyond the limit size
+		for (int i=11; i<=15; ++i) 
+			c.put("key"+i,"value"+i);
+		// if the 11th entry is added, eviction should be triggered 
+		// because the limit size is exceeded, reducing the cache size 
+		// to the target size, i.e. 5. 
+		// Then, 4 entries (12..15) are added without triggering eviction
+		// again, hence the cache size should be 5 + 4 => 9 in the end: 
+		assertEquals(9,c.size());
+		
+		// the entry with key "key1" should still be in the 
+		// cache, since the get() above it has been "touche" and 
+		// so was moved out of the danger zone:
+		assertNotNull(c.get("key1"));
+	}
+
+	public void testFIFOEviction() {
+		Cache c = CacheManager.getInstance().getCache();
+		c.clear();
+		c.setEvictionStrategy(new EvictionStrategyFIFO(5,10));
+		for (int i=1; i<=5; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(5,c.size());
+
+		for (int i=6; i<=8; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(8,c.size());
+
+		for (int i=9; i<=10; ++i) 
+			c.put("key"+i,"value"+i);
+		assertEquals(10,c.size());
+		
+		// retrieve the entry which was added first, 
+		// this "touches" it, but should not change anything 
+		// first 
+		c.get("key1");
+		
+		// add more entries, now beyond the limit size
+		for (int i=11; i<=15; ++i) 
+			c.put("key"+i,"value"+i);
+		// if the 11th entry is added, eviction should be triggered 
+		// because the limit size is exceeded, reducing the cache size 
+		// to the target size, i.e. 5. 
+		// Then, 4 entries (12..15) are added without triggering eviction
+		// again, hence the cache size should be 5 + 4 => 9 in the end: 
+		assertEquals(9,c.size());
+		
+		// the entry with key "key1" should have been evicted 
+		assertNull(c.get("key1"));
+	}
+
+}
+
+
+ 

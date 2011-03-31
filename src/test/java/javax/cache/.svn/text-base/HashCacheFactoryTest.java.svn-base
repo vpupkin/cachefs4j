@@ -1,0 +1,41 @@
+package javax.cache;
+ 
+
+import javax.cache.impl.CacheFactoryImpl;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  28.10.2008::16:25:20<br> 
+ */
+public class HashCacheFactoryTest extends TestCase {
+
+	public void testCreateCacheFactory() throws CacheException {
+		System.setProperty(CacheManager.FACTORY_PROPERTY_NAME, CacheFactoryImpl.class.getName());
+		assertEquals( CacheManager.getInstance().getCacheFactory().getClass(), CacheFactoryImpl.class );
+	}
+
+	public void testCreateNonExisingCacheFactory() throws CacheException {
+		System.setProperty(CacheManager.FACTORY_PROPERTY_NAME, "blablabla");
+		assertEquals( CacheManager.getInstance().getCacheFactory().getClass(), CacheFactoryImpl.class ); 			
+	}
+
+	
+	public void testCreateCache() throws CacheException { 
+		assertTrue( Cache.class.isAssignableFrom(CacheManager.getInstance().getCache().getClass()  )  ); 			
+	}	
+	
+	public void testCreateNonExisingCache() throws CacheException {
+		System.setProperty(CacheManager.FACTORY_PROPERTY_NAME, "blablabla");
+		assertTrue( Cache.class.isAssignableFrom(CacheManager.getInstance().getCache().getClass()  )  ); 			
+	}	
+}
+
+
+ 

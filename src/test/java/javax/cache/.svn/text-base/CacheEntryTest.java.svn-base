@@ -1,0 +1,200 @@
+package javax.cache;
+
+import javax.cache.impl.CacheEntryImpl;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  05.11.2008::11:59:08<br> 
+ */
+public class CacheEntryTest extends TestCase {
+
+	public void testGetHits() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertEquals (0,  ce.getHits());
+	}
+	
+	public void testGetHits2() {		
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals (1,  ce.getHits());
+		cacheTmp.get("key");
+		assertEquals (2,  ce.getHits());
+	}
+	
+	public void testGetLastAccessTime() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertEquals (System.currentTimeMillis(), ce.getLastAccessTime());
+	}
+	
+	public void testGetLastAccessTime2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals (System.currentTimeMillis(), ce.getLastAccessTime());
+	}
+
+	public void testGetLastUpdateTime() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertEquals (ce.getCreationTime(), ce.getLastUpdateTime());
+	}
+	
+	public void testGetLastUpdateTime2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals (ce.getCreationTime(), ce.getLastUpdateTime());
+	}
+
+	public void testGetCreationTime() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertEquals (System.currentTimeMillis(), ce.getCreationTime());
+	}
+	
+	public void testGetCreationTime2() {
+		long start =System.currentTimeMillis();
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		long end =System.currentTimeMillis();
+		assertTrue (  ce.getCreationTime() >= start && ce.getCreationTime() <= end);
+	}
+
+	public void testGetExpirationTime() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertNotNull (ce.getExpirationTime());
+	}
+	
+	public void testGetExpirationTime2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertNotNull (ce.getExpirationTime());	
+	}
+
+	public void testGetVersion() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals(System.currentTimeMillis(), ce.getVersion());
+	}
+
+	public void testIsValid() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertTrue (ce.isValid());
+	}
+	
+	public void testIsValid2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertTrue (ce.isValid());	
+	}
+
+	public void testGetCost() { 
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl(key,val);
+		assertEquals( 0, ce.getCost());
+		ce.collectCost(2);
+		assertEquals( 2, ce.getCost());	 
+	}
+	
+	public void testGetCost2() { 
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals( 0, ce.getCost());
+		ce.collectCost(2);
+		assertEquals( 2, ce.getCost());	 
+	}
+
+	public void testGetKey() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl (key,val);
+		assertEquals ("k1", ce.getKey());	
+	}
+	
+	public void testGetKey2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals ("key", ce.getKey());
+	}
+	
+
+	public void testGetValue() {
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl (key,val);
+		assertEquals ("v1", ce.getValue());
+	}
+	
+	public void testGetValue2() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals ("value", ce.getValue());
+	}
+
+	public void testSetValue() {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		ce.setValue("value1");
+		assertTrue(cacheTmp.containsValue("value1"));
+		assertTrue (!cacheTmp.containsValue("value"));
+		
+		
+	}
+
+	public void testEquals() {
+		
+		Object val = "v1";
+		Object key = "k1";
+		CacheEntry ce = new CacheEntryImpl (key,val);
+		assertEquals ( ce.equals(key), ce.equals(val));
+	}
+	
+	public void testEquals2 () {
+		CacheManager cmTmp = CacheManager.getInstance();
+		Cache cacheTmp = cmTmp.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		CacheEntry ce = cacheTmp.getCacheEntry("key");
+		assertEquals ( ce.equals("key"), ce.equals("val"));
+	}
+}
+
+
+ 
