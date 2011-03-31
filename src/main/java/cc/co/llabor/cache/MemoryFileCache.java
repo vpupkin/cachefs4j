@@ -178,8 +178,7 @@ public class MemoryFileCache {
 	}
 
 	private synchronized void addToList(String name) {
-		if (list.indexOf(name) == -1)
-			list.add(name);
+ 
 		// update parent
 		int beginIndex = 0;
 		int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
@@ -266,79 +265,42 @@ public class MemoryFileCache {
 		 return name;
 	 }
 
-	List<String> list = new ArrayList<String>();
-	final String[] retval = new String[] { "" };
-	{
-		list.add(".");
-	}
+ 
 
 	public String[] list(String folderUri) {
-		//list.add("222");list.add(".");list.remove(0);
-		list.clear();
-		Set<String> retvalTmp = new HashSet<String>();
+		List<String> list = new ArrayList<String>();
+		String dirTmp = folderUri + ".!";
 		Properties dir = null;
-		final String dirTmp = (folderUri+"/.!").replace("//","/");
-		try{
-			Cache cache = Manager.getCache(cachename); //Manager.getCache("SCRIPTSTORE/ABC")
-			dir = (Properties)cache.get(dirTmp);//reserved for Dir-content
-			for (String item: dir.keySet() .toArray(new String[]{})){
-				if (item.endsWith("/.!")){
+		try {
+			Cache cache = Manager.getCache(cachename); // Manager.getCache("SCRIPTSTORE/ABC")
+			dir = (Properties) cache.get(dirTmp);// reserved for Dir-content
+			for (String item : dir.keySet().toArray(new String[] {})) {
+				if (item.endsWith("/.!")) {
 					final String dirName = item;
-					//dirName = dirName.substring(1,item.length()-3);
+					// dirName = dirName.substring(1,item.length()-3);
 					list.add(dirName);
-					continue;//fix for old bugs
+					continue;// fix for old bugs
 				}
-				
 				list.add(item);
 			}
-		}catch(	NullPointerException e){
-			dir = new Properties();
-			Cache cache = Manager.getCache(cachename); 
-			// creating date
-			dir.setProperty(".",""+System.currentTimeMillis());
-			cache.put(dirTmp, dir );
-		}catch(Throwable e){
+		} catch (NullPointerException e) {
+			initDir(dirTmp);
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-		
-		for (String nameTmp:list.toArray(retval)){
-			Object o = null;
-			try {
-				if (null == nameTmp) continue;
-				if (nameTmp.endsWith("/.!")){
-					Cache cache = Manager.getCache(this.cachename);
-					if (cache instanceof FileCache){
-						String baseDir = ((FileCache)cache).getBaseDir();
-						nameTmp = nameTmp.startsWith(baseDir)?nameTmp.substring(baseDir.length()):nameTmp;
-					}
-					MemoryFileItem retval = null;
-					o = cache.get(nameTmp);					
-				}else{
-					 String fullPath = folderUri +"/"+	nameTmp;
-					 fullPath = fullPath.replace("//", "/");
-					 o = get(fullPath );
-				}
+		return list.toArray(new String[] {});
+	}
 
-				if (null == o && !".".equals(nameTmp)){
-					list.remove(nameTmp);
-				}else if (o instanceof Properties){
-					final int beginIndex = "/".equals( folderUri )? 1:folderUri.length()+1;
-					final String dirName = nameTmp.substring(beginIndex,nameTmp.length()-3);
-					retvalTmp.add(dirName);//+".."
-				}else{
-					final String fileName = nameTmp;//.substring(1)
-					retvalTmp.add(fileName);
-				}
-				
-			} catch (IOException e) {
-				System.out.println("??----"+nameTmp);
-				e.printStackTrace();
-			} catch (Throwable e) {
-				System.out.println("??----"+nameTmp);
-				e.printStackTrace();
-			}				
-		}
-		return retvalTmp.toArray(retval);
+
+
+
+	private void initDir(String dirTmp) {
+		Properties dir;
+		dir = new Properties();
+		Cache cache = Manager.getCache(cachename);
+		// creating date
+		dir.setProperty(".", "" + System.currentTimeMillis());
+		cache.put(dirTmp, dir);
 	}
 
 	public Object delete(MemoryFileItem toDel) {
@@ -350,8 +312,7 @@ public class MemoryFileCache {
 	}
 
 	private void remFromList(String name) {
-		if (list.indexOf(name) == -1)
-			list.add(name);
+ 
 		// update parent
 		int beginIndex = 0;
 		int endIndex = name.length()-1;
