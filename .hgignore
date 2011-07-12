@@ -1,0 +1,8 @@
+
+syntax: regexp
+^target$
+^.settings$
+syntax: regexp
+^pom\.xml\.releaseBackup$
+syntax: regexp
+^release\.properties$
