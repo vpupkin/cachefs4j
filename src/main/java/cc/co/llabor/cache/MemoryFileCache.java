@@ -2,7 +2,11 @@ package cc.co.llabor.cache;
 
 import java.io.IOException;
 import java.io.OutputStream;   
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.jsr107cache.Cache; 
+import net.sf.jsr107cache.CacheListener;
 
 /** 
  * <b>Description:TODO</b>
@@ -16,6 +20,18 @@ import net.sf.jsr107cache.Cache;
 public class MemoryFileCache {
 	
 	 private String cachename;
+	 
+	 private List<CacheListener> listeners = new ArrayList<CacheListener>();
+	 
+	 public void registerListener(CacheListener l){
+		 listeners.add(l);
+	 }
+	 public CacheListener unregisterListener(CacheListener l){
+		 CacheListener retval = null;
+		 if (listeners.remove(l))
+			 retval = l;
+		 return retval;
+	 }	 
 	
 	public MemoryFileCache(String cachename) {
 		this.cachename = cachename;
@@ -38,9 +54,10 @@ public class MemoryFileCache {
 				retval.getOutputStream().write( ((String)o).getBytes());
 				retval.flush();
 			}
-			if (o instanceof MemoryFileItem)
+			if (o instanceof MemoryFileItem){
 				retval = (MemoryFileItem) o; 
-			 if (retval ==null){ // try to restore parts
+			}
+			if (retval ==null){ // try to restore parts
 				  for (int i=0;cache.get(name+"::"+i)!=null;){
 					 MemoryFileItem next = (MemoryFileItem)cache.get(name+"::"+i);				 
 					 if (i==0 ){
@@ -49,7 +66,8 @@ public class MemoryFileCache {
 					 retval.getOutputStream().write(next.get());
 					 i++;
 				 }
-				 retval.flush();
+				 if (retval !=null)
+					  retval.flush();
 			 }
 			 return retval;
 		 }	
@@ -78,8 +96,17 @@ public class MemoryFileCache {
 				 }
 			 }
 		 }
+		 for (CacheListener l:listeners){ 
+			Object key = name;
+			l.onPut(key );
+		 }
+		 addToList(name);
 		 return name;
 	 }
+	private synchronized void addToList(String name) {
+		if (list.indexOf(name)==-1)
+			 list.add(name);
+	}
 	
 	
 	/**
@@ -92,7 +119,7 @@ public class MemoryFileCache {
 	 * @throws IOException
 	 */
 	 static MemoryFileItem _get (String name) throws IOException{
-		Cache cache = Manager.getCache();
+		Cache cache = getMyCache();
 		MemoryFileItem retval = (MemoryFileItem) cache.get(name);
 		 if (retval ==null){ // try to restore parts
 			  for (int i=0;cache.get(name+"::"+i)!=null;){
@@ -107,6 +134,10 @@ public class MemoryFileCache {
 		 }
 		 return retval;
 	 }
+
+	private static Cache getMyCache() {
+		return Manager.getCache();
+	}
 	 static int MAX_SIZE = 64*1024;
 	 static int MAX_BUFF_SIZE = MAX_SIZE;
 
@@ -120,7 +151,7 @@ public class MemoryFileCache {
 	  * @throws IOException
 	  */
 	 static String _put (MemoryFileItem  item) throws IOException{
-		 Cache cache = Manager.getCache();
+		 Cache cache = getMyCache();
 		 String name = item.getName();
 		 byte[] bs = item.get();
 		 
@@ -145,6 +176,33 @@ public class MemoryFileCache {
 		 }
 		 return name;
 	 }
+
+	List<String> list = new ArrayList<String>();
+	final String[] retval = new String[] { "" };
+	{
+		list.add(".");
+	}
+
+	public String[] list(String folderUri) {
+		//list.add("222");list.add(".");list.remove(0);
+		List<String> retvalTmp = new ArrayList<String>();
+		for (String nameTmp:list.toArray(retval)){
+			Object o = null;
+			try {
+				 o = get(nameTmp);
+				
+			} catch (IOException e) {
+				System.out.println("??----"+nameTmp);
+				e.printStackTrace();
+			}
+			if (null == o && !".".equals(nameTmp)){
+				list.remove(nameTmp);
+			}else{
+				retvalTmp.add(nameTmp.substring(1));
+			}
+		}
+		return retvalTmp.toArray(retval);
+	}
 
 
 }

@@ -4,6 +4,7 @@ import gnu.inet.encoding.Punycode;
 import gnu.inet.encoding.PunycodeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream; 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -115,15 +117,15 @@ public class FileCache implements Cache {
 		Object retval = null;
 		try {
 			File fTmp = createFile(  key);
-			FileInputStream fis;
-			
-
+			FileInputStream fis; 
 			fis = new FileInputStream(fTmp );
 			if ((""+key).endsWith(".properties")){
 				retval = new Properties();
 				((Properties)retval).load(fis);
 			}else if ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  ){
-				retval = fis;
+				// should be String!
+				
+				retval = readFully(fis);
 			}else{
 				ObjectInputStream ois = new ObjectInputStream(fis);
 				retval = ois.readObject();		
@@ -145,6 +147,20 @@ public class FileCache implements Cache {
 	}
 
 	
+	private String readFully(InputStream fis) throws IOException {
+		ByteArrayOutputStream out= new ByteArrayOutputStream();
+		byte[] buf = new byte[16*1024];
+		for (int i= fis.read(buf);i>=0;i=fis.read(buf)){
+			out.write(buf, 0, i);
+		}
+		out.flush();
+		out.close();
+		String retval = new String(out.toByteArray());
+		return retval;
+		
+	}
+
+
 	private String readFile(FileInputStream fis) throws IOException {
 		byte[] buf = new byte[fis.available()];
 		int lenTmp = fis.read(buf);
@@ -307,16 +323,19 @@ public class FileCache implements Cache {
 					fout.write(buf, 0, readed); 
 				}
 				fout.close();
-			}else if (arg1 instanceof BinaryContent){
-				InputStream content = ((BinaryContent)arg1).getContent() ;
-				int bufSize = content.available();
-				bufSize = bufSize == 0? 4096:bufSize; 
-				byte[] buf = new byte[bufSize];
-				for (int readed = content.read(buf);readed>0;readed = content.read(buf)){
-					fout.write(buf, 0, readed); 
+			////MemoryFileItem
+			}else if (arg1 instanceof MemoryFileItem){
+				try{
+					((MemoryFileItem)arg1).write(fout);
+				}catch(Exception e){
+					throw new IOException(e);
 				}
+			////Serializable
+			}else if (arg1 instanceof Serializable){
+				ObjectOutputStream oout = new ObjectOutputStream(fout);
+				oout.writeObject( arg1); 
+				oout.flush();
 				fout.close();
-
 			}else{
 				ObjectOutputStream wr = new ObjectOutputStream(fout);
 				wr.writeObject(arg1);
