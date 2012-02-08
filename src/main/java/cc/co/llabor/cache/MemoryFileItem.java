@@ -30,11 +30,14 @@ public class MemoryFileItem implements FileItem, Serializable {
      
     private String fieldName; 
     protected String contentType; 
+    protected String characterEncoding; 
     protected String fileName; 
     private boolean isFormField; 
-    volatile private Object content_out; 
+    transient Object content_out; 
     protected Blob content; 
     protected Date date_created;
+
+    volatile private InputStream contentInputStream;
         
         MemoryFileItem(String fieldName, String contentType, boolean isFormField,
                         String fileName, int maxSize){
@@ -53,6 +56,7 @@ public class MemoryFileItem implements FileItem, Serializable {
 
 
         public void delete() {
+        	// TODO
                 //Unimplemented - memory only, no cleaning up needed.
         }
 
@@ -73,10 +77,12 @@ public class MemoryFileItem implements FileItem, Serializable {
 
 
         public InputStream getInputStream() throws IOException {
-                ByteArrayInputStream bais;
+                InputStream bais;
                 if(content != null){
                         bais = new ByteArrayInputStream(content.getBytes());
-                } else {
+                } else if(contentInputStream != null){
+                        bais = contentInputStream;
+                }else{
                         bais = new ByteArrayInputStream(((ByteArrayOutputStream)content_out).toByteArray());
                 }
                 return bais;
@@ -97,7 +103,13 @@ public class MemoryFileItem implements FileItem, Serializable {
 
 
         public long getSize() {
-                return (content != null) ? content.getBytes().length : ((ByteArrayOutputStream )content_out).size();
+        		long retval = -1;
+        		if (content != null){
+        			retval = content.getBytes().length    ;     		
+        		}else if (content_out !=null ){
+        			retval =  ((ByteArrayOutputStream )content_out).size();
+        		}
+                return retval ;
         }
 
 
@@ -148,7 +160,8 @@ public class MemoryFileItem implements FileItem, Serializable {
         public synchronized boolean flush() throws IOException{
         		((ByteArrayOutputStream)content_out).flush();
         		((ByteArrayOutputStream)content_out).close(); 
-                content = new Blob(get());  
+        		byte[] data = ((ByteArrayOutputStream)content_out).toByteArray();
+                content = new Blob(data);  
                 content_out = null;
                 return true;
         }
@@ -157,6 +170,45 @@ public class MemoryFileItem implements FileItem, Serializable {
         public Date getDate() {
                 return date_created;
         }
+
+		public void setContentType(String contentType) {
+			this.contentType = contentType;
+		}
+
+		public String getCharacterEncoding() { 
+				return characterEncoding;
+		}
+
+		public void setCharacterEncoding(String characterEncoding) {
+			this.characterEncoding = characterEncoding;
+		}
+
+		/**
+		 * store fully Input into BA anf close the Input
+		 * @author gennady
+		 * @param in
+		 */
+		public void setContentInputStream(InputStream in) {
+			this.contentInputStream = in;
+			try {
+				if (this.content_out ==null){
+					content_out = new ByteArrayOutputStream();
+				}
+				OutputStream out = getOutputStream();
+				byte[]buff = new byte[1024];
+				for (int i=in.read(buff);i>0;i=in.read(buff)){
+					out.write(buff, 0,i);
+				}
+				flush();
+				this.contentInputStream = null;//content.getBytes().length
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		}
         
 }
 
