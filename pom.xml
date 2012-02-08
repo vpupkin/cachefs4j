@@ -5,10 +5,11 @@
 	<parent>
 		<groupId>cc.co.llabor</groupId>
 		<artifactId>l-parent</artifactId>
-		<version>1.6</version>
+		<version>1.5</version>
 	</parent>	
 
 	<name>CacheFS</name>
+	<packaging>jar</packaging>
 	<version>0.0.9-SNAPSHOT</version>
 	<description>FileSystem based JSR-170 implementation</description>
 	<url>https://code.google.com/p/cachefs4j/</url>

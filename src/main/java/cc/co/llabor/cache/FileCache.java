@@ -13,8 +13,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder; 
-import java.util.ArrayList;
+import java.net.URLEncoder;  
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -127,6 +126,9 @@ public class FileCache implements Cache {
 						retval = ois.readObject();
 					}catch(NullPointerException e){
 						e.printStackTrace();
+					}catch(IOException e){
+						// the obj is not serialized-Obj - gives back it as pure InputStream
+						retval = newFileInputStream(fTmp);
 					}
 				}
 				fis.close();
