@@ -208,6 +208,17 @@ public class MemoryFileItem implements FileItem, Serializable {
 			
 		}
 
+		/**
+		 * published interface
+		 * @deprecated use getDate_created()
+		 * 
+		 * @author vipup
+		 * @return
+		 */
+        public Date getDate() {
+            return getDate_created();
+        }		
+		
 		public Date getDate_created() { 
 				return date_created;
 		}

@@ -1,13 +1,12 @@
 package cc.co.llabor.cache;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;   
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
+import java.util.Date; 
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Properties; 
 
 import net.sf.jsr107cache.Cache; 
 import net.sf.jsr107cache.CacheListener;
@@ -102,6 +101,15 @@ public class MemoryFileCache {
 				 if (retval !=null)
 					  retval.flush();
 			 }
+			
+			if (o instanceof InputStream){  
+				 InputStream in = (InputStream)o;
+				 retval = new MemoryFileItem ( name,"text/plain",false,name, 0);
+				 byte[] b = new byte[in.available()];
+				 in.read(b);
+				 retval.getOutputStream().write(b );
+				 retval.flush();
+			 }
 			 return retval;
 		 }	
              
@@ -182,15 +190,16 @@ public class MemoryFileCache {
 		// update parent
 		int beginIndex = 0;
 		int endIndex = name.substring(0,name.length()-3).lastIndexOf("/");
+		
 		Cache cache = Manager.getCache(cachename);
-		final String parentName = name.substring(beginIndex, endIndex)+"/.!";
+		final String parentName = name.substring(beginIndex,  endIndex==-1?0:endIndex )+"/.!";
 		Properties parent = (Properties)cache.get(parentName);
 		parent = parent==null?new Properties():parent;
 		String pureName = name.substring(endIndex+1);
 		parent.put(pureName, ""+System.currentTimeMillis());
 		// replace
 		Properties toDel = (Properties)cache.remove(parentName);
-		System.out.println(toDel);
+		//System.out.println(toDel);
 		// update Date for Dir
 		parent.put(CREATION_DATE, ""+System.currentTimeMillis());
 		cache.put(parentName, parent );
