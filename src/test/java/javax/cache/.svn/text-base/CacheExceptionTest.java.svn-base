@@ -1,0 +1,36 @@
+package javax.cache;
+
+import junit.framework.TestCase;
+
+/** 
+ * <b>Description:TODO</b>
+ * @author      Gennady<br>
+ * <br>
+ * <b>Copyright:</b>     Copyright (c) 2006-2008 OXSEED AG <br>
+ * <b>Company:</b>       OXSEED AG  <br>
+ * 
+ * Creation:  06.11.2008::16:26:37<br> 
+ */
+public class CacheExceptionTest extends TestCase {
+
+	public void testCacheException() {
+		CacheException ceTmp = new CacheException();
+		assertTrue(ceTmp instanceof Exception);
+	}
+
+	public void testCacheExceptionString() {
+		CacheException ceTmp = new CacheException(""+this.getName());
+		assertEquals(ceTmp.getMessage(),""+this.getName() );
+	}
+
+	public void testCacheExceptionStringThrowable() {
+		Throwable ex = new CacheException();
+		CacheException ceTmp = new CacheException(""+this.getName(), ex );
+		assertEquals(ceTmp.getMessage(),""+this.getName() );
+		assertEquals(ceTmp.getCause() ,ex);
+	}
+
+}
+
+
+ 

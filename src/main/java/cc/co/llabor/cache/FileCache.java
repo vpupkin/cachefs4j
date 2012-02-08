@@ -2,25 +2,22 @@ package cc.co.llabor.cache;
 
 import gnu.inet.encoding.Punycode;
 import gnu.inet.encoding.PunycodeException;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+ 
+import java.io.File; 
+import java.io.FileNotFoundException; 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream; 
-import java.io.Serializable;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;  
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Iterator; 
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -53,7 +50,7 @@ public class FileCache implements Cache {
 	public static final String NAMESPACE = "namespace";
 	private static final Logger log = Logger .getLogger(FileCache.class.getName());
 	private File basedir ;
-	private Properties props = new Properties();
+	private Properties props = new Properties(); 
 
 	public FileCache(Map arg0) {
 		this.props .putAll(arg0);
@@ -69,12 +66,20 @@ public class FileCache implements Cache {
 
 	
 	public void addListener(CacheListener arg0) {
-		 // TODO implement 
+		// TODO Auto-generated method stub
+		if (1 == 1)
+			throw new RuntimeException("not yet implemented since 14.04.2010");
+		else {
+			return  ;
+		} 
 	}
 
 	
 	public void clear() {
-		// TODO Auto-generated method stub
+		Set keys = keySet();
+		for( Object key: keys.toArray()){
+			remove(key);
+		}
 		 
 	}
 
@@ -84,32 +89,22 @@ public class FileCache implements Cache {
 	}
 
 	
-	public boolean containsValue(Object arg0) {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return false;
-		}
+	public boolean containsValue(Object o) {
+		final Collection values = this.values();
+		final boolean contains = values.contains(o);
+		return contains;
 	}
 
 	
 	public Set entrySet() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return null;
-		}
+		Set retval= new HashSet<Object>();
+		retval.addAll(this.values());
+		return retval;
 	}
 
 	
 	public void evict() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-		}
+		// done
 	}
 
 	
@@ -117,18 +112,25 @@ public class FileCache implements Cache {
 		Object retval = null;
 		try {
 			File fTmp = createFile(  key);
-			FileInputStream fis; 
-			fis = new FileInputStream(fTmp );
-			if ((""+key).endsWith(".properties")){
-				retval = new Properties();
-				((Properties)retval).load(fis);
-			}else if ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  ){
-				// should be String!
-				
-				retval = readFully(fis);
-			}else{
-				ObjectInputStream ois = new ObjectInputStream(fis);
-				retval = ois.readObject();		
+			InputStream fis;
+			synchronized (Properties.class) {
+				fis = newFileInputStream(fTmp);
+				if ((""+key).endsWith(".properties") || (""+key).endsWith("/.!")){
+					retval = new Properties();
+					((Properties)retval).load(fis);
+				}else if (1==2 && ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  )){
+					retval = fis;
+				}else{
+					try{
+						ObjectInputStream ois = new ObjectInputStream(fis);
+						retval = ois.readObject();
+					}catch(NullPointerException e){
+						e.printStackTrace();
+					}catch(IOException e){
+						// the obj is not serialized-Obj - gives back it as pure InputStream
+						retval = newFileInputStream(fTmp);
+					}
+				}
 				fis.close();
 			}
 		} catch (FileNotFoundException e) {
@@ -139,29 +141,36 @@ public class FileCache implements Cache {
 			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}finally{
-			return retval;
-		}
+			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
+		} 
+		return retval ;
 
+	}
+
+
+	private synchronized InputStream newFileInputStream(File fTmp)
+			throws ClassNotFoundException, NoSuchMethodException,
+			InstantiationException, IllegalAccessException,
+			InvocationTargetException {
+		InputStream fis;
+		fis =(InputStream)constructorITmp.newInstance(fTmp );;
+		return fis;
 	}
 
 	
-	private String readFully(InputStream fis) throws IOException {
-		ByteArrayOutputStream out= new ByteArrayOutputStream();
-		byte[] buf = new byte[16*1024];
-		for (int i= fis.read(buf);i>=0;i=fis.read(buf)){
-			out.write(buf, 0, i);
-		}
-		out.flush();
-		out.close();
-		String retval = new String(out.toByteArray());
-		return retval;
-		
-	}
-
-
-	private String readFile(FileInputStream fis) throws IOException {
+	private String readFile(InputStream fis) throws IOException {
 		byte[] buf = new byte[fis.available()];
 		int lenTmp = fis.read(buf);
 		String retval = new String(buf);
@@ -171,12 +180,12 @@ public class FileCache implements Cache {
 
 
 	public Map getAll(Collection arg0) throws CacheException {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return null;
-		}
+		Map retval = new HashMap<String, Object>();
+		for( Object key: arg0.toArray()){
+			final Object value = get(key);
+			retval.put( key, value);
+		}		
+		return retval;
 	}
 
 	
@@ -200,24 +209,22 @@ public class FileCache implements Cache {
 	}
 
 	
-	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return false;
-		}
+	public boolean isEmpty() { 
+			return size() == 0;
+		 
 	}
 
 	
 	public Set keySet() {
-		Set<File> retval = new HashSet<File> ();
+		Set<String> retval = new HashSet<String> ();
 		String[] listTmp =  null; 
 		listTmp = this.basedir .list();// this.basedir.getParentFile().exists()
 		for (String fNameTmp :listTmp )
 		try{
 			File nextTmp = new File ( this.basedir, fNameTmp);
-			retval.add(nextTmp);
+			final String theRelativePath = nextTmp.toString();
+			String theName = theRelativePath.substring(this.basedir.toString().length()+1);
+			retval.add(theName );
 			System.out.println("+"+fNameTmp);
 			
 		}catch(Exception e){
@@ -231,20 +238,13 @@ public class FileCache implements Cache {
 
 	
 	public void load(Object arg0) throws CacheException {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-		}
+		// done
+		 
 	}
 
 	
 	public void loadAll(Collection arg0) throws CacheException {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-		}
+		// done
 	}
 
 	
@@ -296,52 +296,53 @@ public class FileCache implements Cache {
 	
 	
 	public Object put(Object key, Object arg1) {
-		
-		FileOutputStream fout;
+		Object retval =  arg1;
 		try {
 			
 			File fileTmp = createFile(key);
-			try{
-				String parent = fileTmp.getParent();
-				String parent2 = parent.replace(".", File.separator);
-				new File(parent).mkdirs();
-			}catch(Exception e){
-				 e.printStackTrace();
-			}
-			fout = new FileOutputStream(fileTmp );
-			if (arg1 instanceof Properties){
-				Properties prps = (Properties) arg1;
-				prps.store(fout, "CacheEntry stored at " +System.currentTimeMillis());
-				fout.close();
-
-			}else if (arg1 instanceof InputStream){
-				InputStream content = (InputStream)arg1 ;
-				int bufSize = content.available();
-				bufSize = bufSize == 0? 4096:bufSize; 
-				byte[] buf = new byte[bufSize];
-				for (int readed = content.read(buf);readed>0;readed = content.read(buf)){
-					fout.write(buf, 0, readed); 
+			String parent = fileTmp.getParent();
+			final File parentDir = new File(parent);
+			parentDir.mkdirs();
+			synchronized (Properties.class) {
+				OutputStream fout = null;
+				fout = newFileOutputStream(fileTmp);
+				if (arg1 instanceof Properties) {
+					
+					Properties prps = (Properties) arg1;
+					final long currentTimeMillis = System.currentTimeMillis();
+					// prps.put(MemoryFileCache.CREATION_DATE,
+					// currentTimeMillis);
+					prps.store(fout, "CacheEntry stored at "
+							+ currentTimeMillis);
+				} else if (arg1 instanceof InputStream) {
+					InputStream content = (InputStream) arg1;
+					int bufSize = content.available();
+					bufSize = bufSize == 0 ? 4096 : bufSize;
+					byte[] buf = new byte[bufSize];
+					for (int readed = content.read(buf); readed > 0; readed = content
+							.read(buf)) {
+						fout.write(buf, 0, readed);
+					}
+				} else if (arg1 instanceof MemoryFileItem){
+					MemoryFileItem it1 = (MemoryFileItem)arg1;
+					if (it1.getSize()>0)
+					try {
+						it1 .write( fout);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						System.out.println("");
+						e.printStackTrace();
+					}
+					 
+				} else {
+					ObjectOutputStream wr = new ObjectOutputStream(fout);
+					wr.writeObject(arg1);
+					wr.close();
 				}
+				fout.flush();
 				fout.close();
-			////MemoryFileItem
-			}else if (arg1 instanceof MemoryFileItem){
-				try{
-					((MemoryFileItem)arg1).write(fout);
-				}catch(Exception e){
-					throw new IOException(e);
-				}
-			////Serializable
-			}else if (arg1 instanceof Serializable){
-				ObjectOutputStream oout = new ObjectOutputStream(fout);
-				oout.writeObject( arg1); 
-				oout.flush();
-				fout.close();
-			}else{
-				ObjectOutputStream wr = new ObjectOutputStream(fout);
-				wr.writeObject(arg1);
-				wr.close();
 			}
-			return arg1;
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();//(new File(".")).getAbsoluteFile()
@@ -350,8 +351,76 @@ public class FileCache implements Cache {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return e;
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return e;
 		}
-		
+		return retval;
+	}
+
+
+	Class fosClazz = null;
+	Class fisClazz = null; 
+	Constructor constructorITmp = null;
+	Constructor constructorOTmp = null;
+	{
+		try {
+			fosClazz =  Class.forName("java.io.FileOutputStream");
+			constructorOTmp = fosClazz.getConstructor(File.class);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			fisClazz =   Class.forName("java.io.FileInputStream");
+			constructorITmp = fisClazz.getConstructor(File.class);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private synchronized OutputStream newFileOutputStream(File fileTmp)
+			throws ClassNotFoundException, NoSuchMethodException,
+			InstantiationException, IllegalAccessException,
+			InvocationTargetException {
+		OutputStream fout;		 
+		fout = (OutputStream)constructorOTmp.newInstance(fileTmp );
+		return fout;
 	}
 
 	private File createFile(Object key) {
@@ -376,9 +445,23 @@ public class FileCache implements Cache {
 	public Object remove(Object key) {
 		Object retval = get(key);
 		File fileTmp = createFile(key);
-		if (fileTmp.exists() && retval != null){
-			File dest = createFile("~"+key);
-			fileTmp.renameTo(dest );
+		synchronized (Properties.class) {
+			if (fileTmp.exists() && retval != null){
+				File dest = createFile("~"+key);
+				if(1==2)
+				try {
+					dest = File.createTempFile("XXX", "-");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}	
+				if (2==3){
+					fileTmp.renameTo(dest );
+					dest.delete();
+				}else{
+					fileTmp.delete();
+				}
+			}
 		}
 		return retval;
 	}
@@ -393,23 +476,24 @@ public class FileCache implements Cache {
 	}
 
 	
-	public int size() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return 0;
-		}
+	public int size() { 
+		return basedir.list().length;
+		 
 	}
 
 	
-	public Collection values() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return null;
+	public Collection values()   {
+		Set<String> all = this.keySet();
+		Map<String, Object> allVals = null;
+		try {
+			allVals = getAll(all);
+		} catch (CacheException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			e.printStackTrace();
 		}
+		Collection retval =allVals.values(); 
+		return retval ;
 	}
 
 
