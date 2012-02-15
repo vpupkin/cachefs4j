@@ -3,6 +3,8 @@ package cc.co.llabor.cache;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
  
@@ -129,27 +131,42 @@ public class Manager {
 		if (cacheNS == null)return getCache("DEFAULT");
 		
 		CacheManager cm = CacheManager.getInstance(); 
-		Cache retval = cm.getCache (cacheNS);
+		
 		boolean isGAE = null != gooTmp;
-		 
-		if ( ( retval == null && ( isGAE || createIfNotExists ) )) // for GAE - always create
-		synchronized (CacheManager.class) { 
-			if (retval == null)
+		
+		Cache retval = null;
+		if (   isGAE   ) {// for GAE - always create
+			synchronized (CacheManager.class) { 
+				try {
+					CacheFactory cacheFactory;
+					cacheFactory = cm.getCacheFactory();
+					Properties props = new Properties();
+					props.put(NS.NAMESPACE, cacheNS );
+					Cache cacheTmp;
+					cacheTmp = cacheFactory.createCache(props);
+					cm.registerCache(cacheNS, cacheTmp);
+					retval = cacheTmp;
+				} catch (CacheException e) {
+					log.severe(e.getMessage());
+					e.printStackTrace();
+					throw new RuntimeException(e);
+				}
+			}
+		}else if ( createIfNotExists){
+			retval = cm.getCache (cacheNS);
 			try {
-				CacheFactory cacheFactory;
-				cacheFactory = cm.getCacheFactory();
+				//http://code.google.com/intl/ru/appengine/docs/java/memcache/usingjcache.html
 				Properties props = new Properties();
 				props.put(NS.NAMESPACE, cacheNS );
-				Cache cacheTmp;
-				cacheTmp = cacheFactory.createCache(props);
-				cm.registerCache(cacheNS, cacheTmp);
-				retval = cacheTmp;
+				retval  = retval ==null? cm.getCacheFactory().createCache(props):retval;
 			} catch (CacheException e) {
 				log.severe(e.getMessage());
 				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
-		} 
+		}else{
+			retval = cm.getCache (cacheNS);
+		}
 		return  retval; 
 	}
 
