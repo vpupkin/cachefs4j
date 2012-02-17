@@ -34,6 +34,14 @@ public class CommentedProperties extends java.util.Properties {
 
 	private int linecount;
 
+	private String title;
+
+	public CommentedProperties(String sTitle) {
+		this.setTitle(sTitle);
+	}
+	public CommentedProperties() {
+		title = null;
+	}
 	/**
 	 * Load properties from the specified InputStream. 
 	 * Overload the load method in Properties so we can keep comment and blank lines.
@@ -102,7 +110,9 @@ public class CommentedProperties extends java.util.Properties {
 		// The spec says that the file must be encoded using ISO-8859-1.
 		PrintWriter pw
 		= new PrintWriter(new OutputStreamWriter(out, STD_ENCODING));
- 
+		if (title!=null){
+			pw.println(("#"+this.title).replace("##", "#"));
+		}
 		for(String key:this.keySet().toArray(new String[]{})){
 			String commentTmp = comments.getProperty(key);
 			if (commentTmp!=null){
@@ -131,6 +141,12 @@ public class CommentedProperties extends java.util.Properties {
 	 */
 	public String getPropertyComment(String key) { 
 		return comments.getProperty(key); 
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getTitle() { 
+		return title;
 	}
 	
 }
