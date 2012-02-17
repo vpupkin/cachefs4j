@@ -45,16 +45,16 @@ public class CommentedProperties extends java.util.Properties {
 		BufferedReader inBuf =
 		new BufferedReader(new InputStreamReader(inStream, STD_ENCODING));
 		StringWithComments line;
-		try{
-			while ((line = readln(inBuf)) != null) {
-				String key_val []= line.getLine().replace(" ", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t", ";").split("=");
-				String keyTmp = key_val [0];
-				String valTmp= line.getLine().substring(keyTmp.length()+1).trim(); 
-				String comments2 = line.getComments();
-				this.comments.put(keyTmp, comments2);
-				this.put(keyTmp, valTmp); 
-			}
-		}catch (NullPointerException e){}
+ 
+		while ((line = readln(inBuf)) != null) {
+			String key_val []= line.getLine().replace(" ", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t", ";").split("=");
+			String keyTmp = key_val [0];
+			String valTmp= line.getLine().substring(keyTmp.length()+1).trim(); 
+			String comments2 = line.getComments();
+			this.comments.put(keyTmp, comments2);
+			this.put(keyTmp, valTmp); 
+		}
+
 	}
 	/**
 	 * return trimmed, uncommented, non-empty line of CFG-File
@@ -81,9 +81,9 @@ public class CommentedProperties extends java.util.Properties {
 			}
 			
 		}catch(NullPointerException e){
-			//e.printStackTrace();
-		}
-		//System.out.println(skipped);
+			//throw new IOException("EOF at line "+linecount);
+			return null ;
+		} 
 		return new StringWithComments(retval, skipped);
 	}
 	/**
