@@ -18,14 +18,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator; 
-import java.util.Map;
+import java.util.Map; 
 import java.util.Properties;
+
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
+
+import cc.co.llabor.props.CommentedProperties;
 
 
  
@@ -50,7 +53,7 @@ public class FileCache implements Cache {
 	public static final String NAMESPACE = "namespace";
 	private static final Logger log = Logger .getLogger(FileCache.class.getName());
 	private File basedir ;
-	private Properties props = new Properties(); 
+	private Properties props = new CommentedProperties(); 
 
 	public FileCache(Map arg0) {
 		this.props .putAll(arg0);
@@ -113,11 +116,11 @@ public class FileCache implements Cache {
 		try {
 			File fTmp = createFile(  key);
 			InputStream fis;
-			synchronized (Properties.class) {
+			synchronized (CommentedProperties.class) {
 				fis = newFileInputStream(fTmp);
 				if ((""+key).endsWith(".properties") || (""+key).endsWith("/.!")){
-					retval = new Properties();
-					((Properties)retval).load(fis);
+					retval = new CommentedProperties();
+					((CommentedProperties)retval).load(fis);
 				}else if (1==2 && ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  )){
 					retval = fis;
 				}else{
