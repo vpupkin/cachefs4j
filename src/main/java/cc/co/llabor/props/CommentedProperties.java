@@ -56,8 +56,17 @@ public class CommentedProperties extends java.util.Properties {
  
 		while ((line = readln(inBuf)) != null) {
 			String key_val []= line.getLine().replace(" ", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t", ";").split("=");
-			String keyTmp = key_val [0];
-			String valTmp= line.getLine().substring(keyTmp.length()+1).trim(); 
+			String keyTmp;
+			String valTmp;
+			try{
+				keyTmp = key_val [0];
+				valTmp= line.getLine();
+				valTmp = valTmp.substring(keyTmp.length() +1).trim();
+			}catch(ArrayIndexOutOfBoundsException e){
+				continue;
+			}catch(StringIndexOutOfBoundsException e){
+				continue;
+			}
 			String comments2 = line.getComments();
 			this.comments.put(keyTmp, comments2);
 			this.put(keyTmp, valTmp); 
@@ -111,16 +120,90 @@ public class CommentedProperties extends java.util.Properties {
 		PrintWriter pw
 		= new PrintWriter(new OutputStreamWriter(out, STD_ENCODING));
 		if (title!=null){
-			pw.println(("#"+this.title).replace("##", "#"));
+			String titleTmp = this.title;
+			titleTmp = translit(titleTmp);
+			pw.println(("#"+titleTmp).replace("##", "#"));
 		}
 		for(String key:this.keySet().toArray(new String[]{})){
 			String commentTmp = comments.getProperty(key);
 			if (commentTmp!=null){
-				pw.println(commentTmp);
+				pw.println(translit(commentTmp));
 			}
 			pw.println(key+"="+this.getProperty(key));
 		} 
 		pw.flush ();
+	}
+	public String translit(String titleTmp) {
+		titleTmp = titleTmp.replace(("а".toUpperCase()), "a".toUpperCase());
+		titleTmp = titleTmp.replace(("б".toUpperCase()), "b".toUpperCase());
+		titleTmp = titleTmp.replace(("в".toUpperCase()), "v".toUpperCase());
+		titleTmp = titleTmp.replace(("г".toUpperCase()), "g".toUpperCase());
+		titleTmp = titleTmp.replace(("д".toUpperCase()), "d".toUpperCase());
+		titleTmp = titleTmp.replace(("е".toUpperCase()), "e".toUpperCase());
+		titleTmp = titleTmp.replace(("ё".toUpperCase()), "yo".toUpperCase());
+		titleTmp = titleTmp.replace(("ж".toUpperCase()), "zh".toUpperCase());
+		titleTmp = titleTmp.replace(("з".toUpperCase()), "z".toUpperCase());
+		titleTmp = titleTmp.replace(("и".toUpperCase()), "i".toUpperCase());
+		titleTmp = titleTmp.replace(("й".toUpperCase()), "j".toUpperCase());
+		titleTmp = titleTmp.replace(("к".toUpperCase()), "k".toUpperCase());
+		titleTmp = titleTmp.replace(("л".toUpperCase()), "l".toUpperCase());
+		titleTmp = titleTmp.replace(("м".toUpperCase()), "m".toUpperCase());
+		titleTmp = titleTmp.replace(("н".toUpperCase()), "n".toUpperCase());
+		titleTmp = titleTmp.replace(("о".toUpperCase()), "o".toUpperCase());
+		titleTmp = titleTmp.replace(("п".toUpperCase()), "p".toUpperCase());
+		titleTmp = titleTmp.replace(("р".toUpperCase()), "r".toUpperCase());
+		titleTmp = titleTmp.replace(("с".toUpperCase()), "s".toUpperCase());
+		titleTmp = titleTmp.replace(("т".toUpperCase()), "t".toUpperCase());
+		titleTmp = titleTmp.replace(("у".toUpperCase()), "u".toUpperCase());
+		titleTmp = titleTmp.replace(("ф".toUpperCase()), "f".toUpperCase());
+		titleTmp = titleTmp.replace(("х".toUpperCase()), "h".toUpperCase());
+		titleTmp = titleTmp.replace(("ц".toUpperCase()), "ts".toUpperCase());
+		titleTmp = titleTmp.replace(("ч".toUpperCase()), "ch".toUpperCase());
+		titleTmp = titleTmp.replace(("ш".toUpperCase()), "sh".toUpperCase());
+		titleTmp = titleTmp.replace(("щ".toUpperCase()), "sh'".toUpperCase());
+		titleTmp = titleTmp.replace(("ъ".toUpperCase()), "`".toUpperCase());
+		titleTmp = titleTmp.replace(("ы".toUpperCase()), "y".toUpperCase());
+		titleTmp = titleTmp.replace(("ь".toUpperCase()), "'".toUpperCase());
+		titleTmp = titleTmp.replace(("э".toUpperCase()), "e".toUpperCase());
+		titleTmp = titleTmp.replace(("ю".toUpperCase()), "yu".toUpperCase());
+		titleTmp = titleTmp.replace(("я".toUpperCase()), "ya".toUpperCase()); 
+		titleTmp = titleTmp.replace(("а"), "a");
+		titleTmp = titleTmp.replace(("б"), "b");
+		titleTmp = titleTmp.replace(("в"), "v");
+		titleTmp = titleTmp.replace(("г"), "g");
+		titleTmp = titleTmp.replace(("д"), "d");
+		titleTmp = titleTmp.replace(("е"), "e");
+		titleTmp = titleTmp.replace(("ё"), "yo");
+		titleTmp = titleTmp.replace(("ж"), "zh");
+		titleTmp = titleTmp.replace(("з"), "z");
+		titleTmp = titleTmp.replace(("и"), "i");
+		titleTmp = titleTmp.replace(("й"), "j");
+		titleTmp = titleTmp.replace(("к"), "k");
+		titleTmp = titleTmp.replace(("л"), "l");
+		titleTmp = titleTmp.replace(("м"), "m");
+		titleTmp = titleTmp.replace(("н"), "n");
+		titleTmp = titleTmp.replace(("о"), "o");
+		titleTmp = titleTmp.replace(("п"), "p");
+		titleTmp = titleTmp.replace(("р"), "r");
+		titleTmp = titleTmp.replace(("с"), "s");
+		titleTmp = titleTmp.replace(("т"), "t");
+		titleTmp = titleTmp.replace(("у"), "u");
+		titleTmp = titleTmp.replace(("ф"), "f");
+		titleTmp = titleTmp.replace(("х"), "h");
+		titleTmp = titleTmp.replace(("ц"), "ts");
+		titleTmp = titleTmp.replace(("ч"), "ch");
+		titleTmp = titleTmp.replace(("ш"), "sh");
+		titleTmp = titleTmp.replace(("щ"), "sh'");
+		titleTmp = titleTmp.replace(("ъ"), "`");
+		titleTmp = titleTmp.replace(("ы"), "y");
+		titleTmp = titleTmp.replace(("ь"), "'");
+		titleTmp = titleTmp.replace(("э"), "e");
+		titleTmp = titleTmp.replace(("ю"), "yu");
+		titleTmp = titleTmp.replace(("я"), "ya");
+		titleTmp = titleTmp.replace(("«"), "\"");
+		titleTmp = titleTmp.replace(("»"), "\"");
+		titleTmp = titleTmp.replace(("№"), "No");
+		return titleTmp;
 	}
   
 	@Override
