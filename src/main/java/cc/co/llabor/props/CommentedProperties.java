@@ -53,23 +53,26 @@ public class CommentedProperties extends java.util.Properties {
 		BufferedReader inBuf =
 		new BufferedReader(new InputStreamReader(inStream, STD_ENCODING));
 		StringWithComments line;
- 
-		while ((line = readln(inBuf)) != null) {
-			String key_val []= line.getLine().replace(" ", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t", ";").split("=");
-			String keyTmp;
-			String valTmp;
-			try{
-				keyTmp = key_val [0];
-				valTmp= line.getLine();
-				valTmp = valTmp.substring(keyTmp.length() +1).trim();
-			}catch(ArrayIndexOutOfBoundsException e){
-				continue;
-			}catch(StringIndexOutOfBoundsException e){
-				continue;
+		try{
+			while ((line = readln(inBuf)) != null) {
+				String key_val []= line.getLine().replace(" ", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t\t", "\t").replace("\t", ";").split("=");
+				String keyTmp;
+				String valTmp;
+				try{
+					keyTmp = key_val [0];
+					valTmp= line.getLine();
+					valTmp = valTmp.substring(keyTmp.length() +1).trim();
+				}catch(ArrayIndexOutOfBoundsException e){
+					continue;
+				}catch(StringIndexOutOfBoundsException e){
+					continue;
+				}
+				String comments2 = line.getComments();
+				this.comments.put(keyTmp, comments2);
+				this.put(keyTmp, valTmp); 
 			}
-			String comments2 = line.getComments();
-			this.comments.put(keyTmp, comments2);
-			this.put(keyTmp, valTmp); 
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 
 	}
