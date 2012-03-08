@@ -227,9 +227,7 @@ public class FileCache implements Cache {
 			File nextTmp = new File ( this.basedir, fNameTmp);
 			final String theRelativePath = nextTmp.toString();
 			String theName = theRelativePath.substring(this.basedir.toString().length()+1);
-			retval.add(theName );
-			System.out.println("+"+fNameTmp);
-			
+			retval.add(theName ); 
 		}catch(Exception e){
 			e.printStackTrace();
 			this.put(".placeholder", "."+System.currentTimeMillis());
