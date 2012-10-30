@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -135,41 +136,61 @@ public class Manager {
 		boolean isGAE = null != gooTmp;
 		
 		Cache retval = null;
+
 		if (   isGAE   ) {// for GAE - always create
-			synchronized (CacheManager.class) { 
-				try {
-					CacheFactory cacheFactory;
-					cacheFactory = cm.getCacheFactory();
-					Properties props = new Properties();
-					props.put(NS.NAMESPACE, cacheNS );
-					Cache cacheTmp;
-					cacheTmp = cacheFactory.createCache(props);
-					cm.registerCache(cacheNS, cacheTmp);
-					retval = cacheTmp;
-				} catch (CacheException e) {
-					log.severe(e.getMessage());
-					e.printStackTrace();
-					throw new RuntimeException(e);
+			retval = extractGAEcache(cacheNS, cm, retval);
+		}else {
+				retval = cache4cache.get(cacheNS);// cm.getCache (cacheNS);
+				if (retval ==null){
+					// getting over CM
+					if ( createIfNotExists){			
+						try {
+							retval = cm.getCache (cacheNS);
+							//http://code.google.com/intl/ru/appengine/docs/java/memcache/usingjcache.html
+							Properties props = new Properties();
+							props.put(NS.NAMESPACE, cacheNS );
+							CacheFactory cacheFactory = cm.getCacheFactory();
+							retval  = retval ==null? cacheFactory.createCache(props):retval;
+						} catch (CacheException e) {
+							log.severe(e.getMessage());
+							e.printStackTrace();
+							throw new RuntimeException(e);
+						}
+					}else{
+						retval =  cm.getCache (cacheNS);
+					}
+					// TODO caching the cache %-o
+					if (retval!=null){
+						cache4cache.put(cacheNS, retval);
+						// store soccessfull classloader for cache
+						ClassLoader cl = Thread.currentThread().getContextClassLoader();
+						classloader4cache.put(cacheNS, cl );
+					}
 				}
 			}
-		}else if ( createIfNotExists){
-			retval = cm.getCache (cacheNS);
+		return  retval; 
+	}
+
+	private static Cache extractGAEcache(String cacheNS, CacheManager cm, Cache retval) {
+		synchronized (CacheManager.class) { 
 			try {
-				//http://code.google.com/intl/ru/appengine/docs/java/memcache/usingjcache.html
+				CacheFactory cacheFactory = cm.getCacheFactory();
 				Properties props = new Properties();
 				props.put(NS.NAMESPACE, cacheNS );
-				retval  = retval ==null? cm.getCacheFactory().createCache(props):retval;
+				Cache cacheTmp;
+				cacheTmp = cacheFactory.createCache(props);
+				cm.registerCache(cacheNS, cacheTmp);
+				retval = cacheTmp;
 			} catch (CacheException e) {
 				log.severe(e.getMessage());
 				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
-		}else{
-			retval = cm.getCache (cacheNS);
 		}
-		return  retval; 
+		return retval;
 	}
-
+	static Map<String, Cache> cache4cache = new HashMap<String, Cache>();
+	static Map<String, ClassLoader> classloader4cache = new HashMap<String, ClassLoader>();
 }
 
 
