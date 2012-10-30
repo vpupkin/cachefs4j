@@ -145,6 +145,11 @@ public class Manager {
 					// getting over CM
 					if ( createIfNotExists){			
 						try {
+							if (classloader4cache.size()>0){
+								// try to re-use already succesfully-loaded-caches for creating the new one
+								ClassLoader clTmp = (ClassLoader) classloader4cache.values().toArray()[0];
+								Thread.currentThread().setContextClassLoader(clTmp );
+							}
 							retval = cm.getCache (cacheNS);
 							//http://code.google.com/intl/ru/appengine/docs/java/memcache/usingjcache.html
 							Properties props = new Properties();
