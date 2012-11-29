@@ -13,11 +13,11 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URLEncoder;  
+import java.net.URLEncoder;   
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator; 
+import java.util.Iterator;  
 import java.util.Map; 
 import java.util.Properties;
 
@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
+import cc.co.llabor.cache.opt.ListenDispatcher;
 import cc.co.llabor.cache.opt.TheVeryBasicStatistics;
 import cc.co.llabor.cache.opt.ThinObjWrap;
 import cc.co.llabor.props.CommentedProperties;
@@ -56,7 +57,9 @@ public class FileCache implements Cache {
 	private static final Logger log = Logger .getLogger(FileCache.class.getName());
 	private File basedir ;
 	private Properties props = new CommentedProperties();
-	private TheVeryBasicStatistics mySatistic = null;
+	private transient TheVeryBasicStatistics mySatistic = null;
+	private final transient ListenDispatcher listenerDispatcher ;
+	
 
 	public FileCache(Map arg0) {
 		this.props .putAll(arg0);
@@ -68,17 +71,13 @@ public class FileCache implements Cache {
 			basedir.mkdirs();
 			System.out.println("BASEDIR [" + basedir +"] creted.");
 		}
-		mySatistic = TheVeryBasicStatistics.getInstance(namespace);
+		mySatistic = TheVeryBasicStatistics.getInstance(namespace);		
+		listenerDispatcher = new ListenDispatcher("true".equals( this.props.getProperty("delayed.listener")));
 	}
 
 	
 	public void addListener(CacheListener arg0) {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return  ;
-		} 
+		this.listenerDispatcher .addListener(arg0);
 	}
 
 	
@@ -87,7 +86,7 @@ public class FileCache implements Cache {
 		for( Object key: keys.toArray()){
 			remove(key);
 		}
-		 
+		this.listenerDispatcher.onClear();
 	}
 
 	
@@ -109,9 +108,14 @@ public class FileCache implements Cache {
 		return retval;
 	}
 
-	
+	/**
+	 * nobody want/will/plan to call this at all :)
+	 * 
+	 * @deprecated
+	 */
 	public void evict() {
 		// done
+		this.listenerDispatcher.onEvict("");
 	}
 
 	
@@ -165,10 +169,13 @@ public class FileCache implements Cache {
 		
 		// STATISTICS
 		if (retval!=null){
-			this.mySatistic.hit();
+			this.mySatistic.hit(); 
 		}else{
 			this.mySatistic.miss();
 		}
+		
+		// NOTIFICATION 
+		this.listenerDispatcher.onLoad(key) ;
 			
 		return retval ;
 
@@ -183,17 +190,7 @@ public class FileCache implements Cache {
 		fis =(InputStream)constructorITmp.newInstance(fTmp );;
 		return fis;
 	}
-
-	
-	private String readFile(InputStream fis) throws IOException {
-		byte[] buf = new byte[fis.available()];
-		int lenTmp = fis.read(buf);
-		String retval = new String(buf);
-		return retval;
-		 
-	}
-
-
+ 
 	public Map getAll(Collection arg0) throws CacheException {
 		Map retval = new HashMap<String, Object>();
 		for( Object key: arg0.toArray()){
@@ -242,14 +239,19 @@ public class FileCache implements Cache {
 	}
 
 	
-	public void load(Object arg0) throws CacheException {
+	/**
+	 * @see get()
+	 */
+	public void load(Object key) throws CacheException {
 		// done
+		//TODO move from GET() ....this.listenerDispatcher.onLoad(key) ;
 		 
 	}
 
 	
 	public void loadAll(Collection arg0) throws CacheException {
 		// done
+		//TODO move from GET() ....this.listenerDispatcher.onLoad(key) ;
 	}
 
 	
@@ -383,9 +385,14 @@ public class FileCache implements Cache {
 			e.printStackTrace();
 			return e;
 		}
+		// STATISTICS
 		if (key!=null&&arg1!=null){
 			this.mySatistic.postAdd();
 		}
+		
+		// NOTIFICATION
+		this.listenerDispatcher.onPut(key) ;
+		
 		return retval;
 	}
 
@@ -475,16 +482,16 @@ public class FileCache implements Cache {
 		if (retval!=null){
 			this.mySatistic.postDel();
 		}
+		
+		// NOTIFICATION
+		this.listenerDispatcher.onRemove(key) ;
+		
 		return retval;
 	}
 
 	
-	public void removeListener(CacheListener arg0) {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-		}
+	public void removeListener(CacheListener o) {
+		this.listenerDispatcher.removeListener(o);
 	}
 
 	
@@ -501,7 +508,6 @@ public class FileCache implements Cache {
 			allVals = getAll(all);
 		} catch (CacheException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 			e.printStackTrace();
 		}
 		Collection retval =allVals.values(); 

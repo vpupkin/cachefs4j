@@ -153,7 +153,7 @@ public class Manager {
 							retval = cm.getCache (cacheNS);
 							//http://code.google.com/intl/ru/appengine/docs/java/memcache/usingjcache.html
 							Properties props = new Properties();
-							props.put(NS.NAMESPACE, cacheNS );
+							props.put(NS.NAMESPACE, cacheNS ); //props.put("delayed.listener", "true")
 							CacheFactory cacheFactory = cm.getCacheFactory();
 							retval  = retval ==null? cacheFactory.createCache(props):retval;
 						} catch (CacheException e) {

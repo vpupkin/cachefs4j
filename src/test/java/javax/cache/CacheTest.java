@@ -478,6 +478,68 @@ public class CacheTest extends TestCase {
 		assertEquals (0, stat1.getObjectCount() );
 		
 	}	
+	
+	
+	public void testListener() { 
+		Cache cacheTmp = CacheManager.getCache(this.getName());
+		
+		CacheListener listener = new CacheListener(){
+			private int load;
+			private int put;
+			private int evict;
+			private int remove;
+			private int clear;
+			public String toString(){
+				return 
+				" load="+load+
+				" put="+put+
+				" evict="+evict+
+				" remove="+remove+
+				" clear="+clear 
+				;
+			}
+			
+			public void onLoad(Object key) { 
+				load++;
+			}
+
+			public void onPut(Object key) {
+				put++;
+			}
+
+			public void onEvict(Object key) {
+				evict++;
+			}
+
+			public void onRemove(Object key) {
+				remove++;
+			}
+
+			public void onClear() {
+				clear++;
+			}};
+		cacheTmp.addListener(listener );
+		cacheTmp.put("key", "value");
+		cacheTmp.put("key2", "value2");
+		assertEquals (" load=0 put=2 evict=0 remove=0 clear=0", listener.toString() );
+
+		cacheTmp.get("key");
+		cacheTmp.get("keyssss");
+		assertEquals (" load=2 put=2 evict=0 remove=0 clear=0", listener.toString() );
+
+		cacheTmp.evict();
+		assertEquals (" load=2 put=2 evict=1 remove=0 clear=0", listener.toString() );
+		
+		cacheTmp.remove("key2");
+		assertEquals (" load=3 put=2 evict=1 remove=1 clear=0", listener.toString() );		
+		assertEquals (1, cacheTmp.size() );
+		
+		cacheTmp.clear();
+		assertEquals (0, cacheTmp.size() );
+		assertEquals (" load=4 put=2 evict=1 remove=2 clear=1", listener.toString() );
+		 
+		
+	}	
 }
 
 
