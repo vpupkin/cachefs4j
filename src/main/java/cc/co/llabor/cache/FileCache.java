@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
+import cc.co.llabor.cache.opt.TheVeryBasicStatistics;
+import cc.co.llabor.cache.opt.ThinObjWrap;
 import cc.co.llabor.props.CommentedProperties;
 
 
@@ -53,7 +55,8 @@ public class FileCache implements Cache {
 	public static final String NAMESPACE = "namespace";
 	private static final Logger log = Logger .getLogger(FileCache.class.getName());
 	private File basedir ;
-	private Properties props = new CommentedProperties(); 
+	private Properties props = new CommentedProperties();
+	private TheVeryBasicStatistics mySatistic = null;
 
 	public FileCache(Map arg0) {
 		this.props .putAll(arg0);
@@ -65,6 +68,7 @@ public class FileCache implements Cache {
 			basedir.mkdirs();
 			System.out.println("BASEDIR [" + basedir +"] creted.");
 		}
+		mySatistic = TheVeryBasicStatistics.getInstance(namespace);
 	}
 
 	
@@ -114,23 +118,23 @@ public class FileCache implements Cache {
 	public Object get(Object key) {
 		Object retval = null;
 		try {
-			File fTmp = createFile(  key);
+			File fTmp = createFileHandle(  key);
 			InputStream fis;
 			synchronized (CommentedProperties.class) {
 				fis = newFileInputStream(fTmp);
 				if ((""+key).endsWith(".properties") || (""+key).endsWith("/.!")){
+//					CommentedProperties
 					retval = new CommentedProperties();
 					((CommentedProperties)retval).load(fis);
-				}else if (1==2 && ((""+key).endsWith(".js") || (""+key).endsWith(".xml")  )){
-					retval = fis;
-				}else{
+				}else {
 					try{
+// 					Serialisable						
 						ObjectInputStream ois = new ObjectInputStream(fis);
 						retval = ois.readObject();
 					}catch(NullPointerException e){
 						e.printStackTrace();
 					}catch(IOException e){
-						// the obj is not serialized-Obj - gives back it as pure InputStream
+// 					the obj is not serialized-Obj - gives back it as pure InputStream
 						retval = newFileInputStream(fTmp);
 					}
 				}
@@ -158,6 +162,14 @@ public class FileCache implements Cache {
 			// TODO Auto-generated catch block
 			if(Level.ALL == log.getLevel() || Level.FINEST == log.getLevel() || Level.FINER == log.getLevel() || Level.FINE == log.getLevel() ) e.printStackTrace();
 		} 
+		
+		// STATISTICS
+		if (retval!=null){
+			this.mySatistic.hit();
+		}else{
+			this.mySatistic.miss();
+		}
+			
 		return retval ;
 
 	}
@@ -192,23 +204,15 @@ public class FileCache implements Cache {
 	}
 
 	
-	public CacheEntry getCacheEntry(Object arg0) {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return null;
-		}
+	public CacheEntry getCacheEntry(Object key) {
+		Object oTmp = this.get(key);
+		CacheEntry retval = new ThinObjWrap(key, oTmp);
+		return retval ;
 	}
 
 	
-	public CacheStatistics getCacheStatistics() {
-		// TODO Auto-generated method stub
-		if (1 == 1)
-			throw new RuntimeException("not yet implemented since 14.04.2010");
-		else {
-			return null;
-		}
+	public CacheStatistics getCacheStatistics() { 
+		return this.mySatistic ;
 	}
 
 	
@@ -300,7 +304,7 @@ public class FileCache implements Cache {
 		Object retval =  arg1;
 		try {
 			
-			File fileTmp = createFile(key);
+			File fileTmp = createFileHandle(key);
 			String parent = fileTmp.getParent();
 			final File parentDir = new File(parent);
 			parentDir.mkdirs();
@@ -379,6 +383,9 @@ public class FileCache implements Cache {
 			e.printStackTrace();
 			return e;
 		}
+		if (key!=null&&arg1!=null){
+			this.mySatistic.postAdd();
+		}
 		return retval;
 	}
 
@@ -424,7 +431,7 @@ public class FileCache implements Cache {
 		return fout;
 	}
 
-	private File createFile(Object key) {
+	private File createFileHandle(Object key) {
 		String keyStr = null;
 		try{
 			keyStr= toName(key);
@@ -445,10 +452,10 @@ public class FileCache implements Cache {
 	
 	public Object remove(Object key) {
 		Object retval = get(key);
-		File fileTmp = createFile(key);
+		File fileTmp = createFileHandle(key);
 		synchronized (Properties.class) {
 			if (fileTmp.exists() && retval != null){
-				File dest = createFile("~"+key);
+				File dest = createFileHandle("~"+key);
 				if(1==2)
 				try {
 					dest = File.createTempFile("XXX", "-");
@@ -463,6 +470,10 @@ public class FileCache implements Cache {
 					fileTmp.delete();
 				}
 			}
+		}
+		// STATISTICS
+		if (retval!=null){
+			this.mySatistic.postDel();
 		}
 		return retval;
 	}

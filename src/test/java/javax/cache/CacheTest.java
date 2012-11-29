@@ -15,6 +15,7 @@ import net.sf.jsr107cache.Cache;
 import net.sf.jsr107cache.CacheEntry;
 import net.sf.jsr107cache.CacheException;
 import net.sf.jsr107cache.CacheListener; 
+import net.sf.jsr107cache.CacheStatistics;
  
 
 import junit.framework.TestCase;
@@ -425,6 +426,58 @@ public class CacheTest extends TestCase {
 		
 	}
 
+
+	
+	
+	public void testCacheEntry() { 
+		Cache cacheTmp = CacheManager.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		cacheTmp.put("key2", "value2");
+		assertEquals (2, cacheTmp.size() );
+
+		CacheEntry entry1 = cacheTmp.getCacheEntry("key");
+		entry1.getValue().equals("value");
+
+		CacheEntry entry2 = cacheTmp.getCacheEntry("key2");
+		entry2.getValue().equals("value2");
+		
+		// TODO - this part is still not implemented
+		assertEquals (0, entry1.getHits() );
+		assertEquals (0, entry1.getCreationTime() );
+		assertEquals (0, entry1.getLastAccessTime()  );
+		assertEquals (0, entry1.getVersion()   );
+		assertEquals (0, entry1.getExpirationTime() );
+		
+		
+		cacheTmp.remove("key");
+		cacheTmp.remove("key2");
+		assertEquals (0, cacheTmp.size() );
+		
+	}
+
+	
+	public void testCacheStatistics() { 
+		Cache cacheTmp = CacheManager.getCache(this.getName());
+		cacheTmp.put("key", "value");
+		cacheTmp.put("key2", "value2");
+		assertEquals (2, cacheTmp.size() );
+
+		CacheStatistics stat1 = cacheTmp.getCacheStatistics();
+		assertEquals (2, stat1.getObjectCount() );
+		
+		assertEquals (0, stat1.getCacheHits() );
+		assertEquals (0, stat1.getCacheMisses());
+		cacheTmp.get("key");
+		cacheTmp.get("keyssss");
+		assertEquals (1, stat1.getCacheHits() );
+		assertEquals (1, stat1.getCacheMisses() );
+ 		
+		cacheTmp.remove("key");
+		cacheTmp.remove("key2");
+		assertEquals (0, cacheTmp.size() );
+		assertEquals (0, stat1.getObjectCount() );
+		
+	}	
 }
 
 
