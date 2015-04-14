@@ -2,11 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cc.co.llabor</groupId>
 	<artifactId>cachefs</artifactId>
-	<parent>
-		<groupId>cc.co.llabor</groupId>
-		<artifactId>l-parent</artifactId>
-		<version>1.5</version>
-	</parent>
+	
 	<name>CacheFS</name>
 	<packaging>jar</packaging>
 	<version>0.0.16-SNAPSHOT</version>
@@ -87,10 +83,18 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<dependency>
-			<groupId>gnu.inet.encoding</groupId>
+		 <dependency>
+			<groupId>org.gnu.inet</groupId>
 			<artifactId>libidn</artifactId>
-			<version>1.19</version>
+			<version>1.15</version>
+		</dependency>
+		  
+		 		<!-- Test scope -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>  
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>
